@@ -614,6 +614,10 @@
                 
                 $attempt = reader_create_attempt($reader, $attemptnumber, $bookdata->id);
                 $attempt->ip = getremoteaddr();
+                
+                $lastattemptid     = $DB->get_field_sql('SELECT uniqueid FROM {reader_attempts} ORDER BY uniqueid DESC');
+                $attempt->uniqueid = $lastattemptid + 1;
+                
                 // Save the attempt
                 if (!$attempt->id = $DB->insert_record('reader_attempts', $attempt)) {
                     print_error ('Could not create new attempt');
