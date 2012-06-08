@@ -1,54 +1,39 @@
-<?php
+<?php  // $Id:,v 2.0 2012/05/20 16:10:00 Serafim Panov
     
     require_once("../../config.php");
     require_once("lib.php");
     
-    $id        = optional_param('id', 0, PARAM_INT); 
-    $uid       = optional_param('uid', 0, PARAM_INT); 
+    $id        = required_param('id', 0, PARAM_INT); 
+    $uid       = required_param('uid', 0, PARAM_INT); 
 
-    if ($id) {
-        if (! $cm = get_coursemodule_from_id('reader', $id)) {
-            error("Course Module ID was incorrect");
-        }
-        if (! $course = $DB->get_record("course", array( "id" => $cm->course))) {
-            error("Course is misconfigured");
-        }
-        if (! $reader = $DB->get_record("reader", array( "id" => $cm->instance))) {
-            error("Course module is incorrect");
-        }
-    } else {
-        if (! $reader = $DB->get_record("reader", array( "id" => $a))) {
-            error("Course module is incorrect");
-        }
-        if (! $course = $DB->get_record("course", array( "id" => $reader->course))) {
-            error("Course is misconfigured");
-        }
-        if (! $cm = get_coursemodule_from_instance("reader", $reader->id, $course->id)) {
-            error("Course Module ID was incorrect");
-        }
+    if (!$cm = get_coursemodule_from_id('reader', $id)) {
+        print_error('invalidcoursemodule');
+    }
+    if (!$course = $DB->get_record('course', array('id' => $cm->course))) {
+        print_error("coursemisconf");
+    }
+    if (!$reader = $DB->get_record('reader', array('id' => $cm->instance))) {
+        print_error('invalidcoursemodule');
     }
 
-    require_login($course->id);
+    require_login($course, true, $cm);
 
     add_to_log($course->id, "reader", "show incorrect quizzes", "showincorrectquizzes.php?id=$id", "$cm->instance");
     
+    $bookincorrectinprevterm = '';
     
     if ($oldattempts = $DB->get_records_sql("SELECT * FROM {reader_attempts} WHERE userid= ? and timefinish <= ? ORDER BY timefinish", array($uid,$reader->ignordate))) {
         foreach ($oldattempts as $oldattempt) {
-            //-----------------Book old covers------------------//
             if (strtolower($oldattempt->passed) != 'true') {
                 $bookdata = $DB->get_record("reader_publisher", array( "id" => $oldattempt->quizid));
                 $bookincorrectinprevterm .= "{$bookdata->name}<br />";
             }
-            //----------------------------------------------//
         }
     }
     
     if ($bookincorrectinprevterm) {
         echo $bookincorrectinprevterm;
-    }
-    else
-    {
+    } else {
         print_string("noincorrectquizzes", "reader");
     }
     

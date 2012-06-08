@@ -1,4 +1,4 @@
-﻿<?php // $Id: restorelib.php,v 1.30.2.5 2008/05/09 15:10:42 tjhunt Exp $
+<?php // $Id: restorelib.php,v 1.30.2.5 2008/05/09 15:10:42 tjhunt Exp $
 /**
  * Question bank restore code.
  *
@@ -182,7 +182,6 @@
                     }
                 }
                 $question_cat->contextid = $tocontext->id;
-                
 
                 //does cat exist ?? if it does we check if the cat and questions already exist whether we have
                 //add permission or not if we have no permission to add questions to SYSTEM or COURSECAT context
@@ -222,7 +221,7 @@
                 if ($question_cat->id) {
                     //We have the newid, update backup_ids
                     //Now restore question
-                    //print_r ($info);
+
                     $status = restore_questions($category->id, $question_cat, $info, $restore);
                     //echo "Adding questions end ".$question_cat->id."<br />";
                 } else {
@@ -318,7 +317,6 @@
         }
         //print_r ($info);
         //print_r ($questions);
-        //die();
 
         //Iterate over questions
         for($i = 0; $i < sizeof($questions); $i++) {

@@ -1,15 +1,15 @@
-<?php // $Id: ,v 1.0 2008/03/20 16:41:20 serafim panov 
+<?php  // $Id:,v 2.0 2012/05/20 16:10:00 Serafim Panov
 
-$tabs = array();
-$row  = array();
-$inactive = array();
-$activated = array();
+    $tabs      = array();
+    $row       = array();
+    $inactive  = array();
+    $activated = array();
 
-$row[] = new tabobject('quizes', "view.php?a=quizes&id=".$id, "Quizzes");
-$row[] = new tabobject('admin', "admin.php?a=admin&id=".$id, "Admin Area");
-$row[] = new tabobject('download', "", "Download Quizzes");
+    $row[] = new tabobject('quizes', new moodle_url("/mod/reader/view.php", array("a" => "quizes", "id" => $id)), "Quizzes");
+    $row[] = new tabobject('admin', new moodle_url("/mod/reader/admin.php", array("a" => "admin", "id" => $id)), "Admin Area");
+    $row[] = new tabobject('download', "", "Download Quizzes");
 
-$tabs[] = $row;
+    $tabs[] = $row;
 
-print_tabs($tabs, 'download', $inactive, $activated);
+    print_tabs($tabs, 'download', $inactive, $activated);
 

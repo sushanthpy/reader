@@ -1,4 +1,4 @@
-<?php //$Id,v 1.0 2008/01/20 12:00:00 Serafim Panov Exp $ 
+<?php  // $Id:,v 2.0 2012/05/20 16:10:00 Serafim Panov
 
 if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
@@ -7,9 +7,7 @@ if (!defined('MOODLE_INTERNAL')) {
 require_once($CFG->dirroot . '/course/moodleform_mod.php');
 
 class mod_reader_mod_form extends moodleform_mod {
-
     function definition() {
-
         global $COURSE, $CFG, $form, $DB, $PAGE;
         
         $readercfg = get_config('reader');
@@ -19,9 +17,7 @@ class mod_reader_mod_form extends moodleform_mod {
         $context = get_context_instance(CONTEXT_COURSE, $COURSE->id);
         if (has_capability('mod/reader:cancreateinstance', $context) || $readercfg->reader_editingteacherrole == 0) {
             
-        }
-        else
-        {
+        } else {
             notify(get_string('nothavepermissioncreateinstance', 'reader'));
             die();
         }
@@ -41,10 +37,8 @@ class mod_reader_mod_form extends moodleform_mod {
 
         $mform->addElement('header', 'timinghdr', get_string('timing', 'form'));
         $mform->addElement('date_time_selector', 'timeopen', get_string('quizopen', 'quiz'), array('optional'=>true));
-        //$mform->setHelpButton('timeopen', array('timeopen', get_string('quizopen', 'quiz'), 'quiz'));
 
         $mform->addElement('date_time_selector', 'timeclose', get_string('quizclose', 'quiz'), array('optional'=>true));
-        //$mform->setHelpButton('timeclose', array('timeopen', get_string('quizclose', 'quiz'), 'quiz'));
 
 
         $timelimitgrp=array();
@@ -56,11 +50,12 @@ class mod_reader_mod_form extends moodleform_mod {
         $timelimitgrprules['timelimit'][] = array(null, 'numeric', null, 'client');
         $mform->addGroupRule('timelimitgrp', $timelimitgrprules);
         $mform->disabledIf('timelimitgrp', 'timelimitenable');
+        
         if (isset($readercfg->reader_fix_timelimit))
-          $mform->setAdvanced('timelimitgrp', $readercfg->reader_fix_timelimit);
-        //$mform->setHelpButton('timelimitgrp', array("timelimit", get_string("quiztimer","quiz"), "quiz"));
+            $mform->setAdvanced('timelimitgrp', $readercfg->reader_fix_timelimit);
+
         if (isset($readercfg->reader_timelimit))
-          $mform->setDefault('timelimit', $readercfg->reader_timelimit);
+            $mform->setDefault('timelimit', $readercfg->reader_timelimit);
 //-------------------------------------------------------------------------------
         
 //-------------------------------------------------------------------------------
@@ -83,7 +78,6 @@ class mod_reader_mod_form extends moodleform_mod {
         $mform->addElement('text', 'quizpreviouslevel', get_string('s_selectquizes', 'reader'), array('size'=>'10'));
         $mform->addElement('text', 'quiznextlevel', get_string('s_quiznextlevel', 'reader'), array('size'=>'10'));
         $mform->addElement('text', 'promotionstop', get_string('s_nopromotion', 'reader'), array('size'=>'10'));
-        //$mform->setHelpButton('promotionstop', array('promotionstop', get_string('s_nopromotion', 'reader'), 'reader'));
         $ignorform=array();
         $ignorform[] =& $mform->createElement('date_selector', 'ignordate', '', array('startyear'=>2002, 'stopyear'=>date("Y", time()), 'applydst'=>true));
         $ignorform[] =& $mform->createElement('static', 'description', '', get_string('s_ignor_2', 'reader'));
@@ -109,28 +103,31 @@ class mod_reader_mod_form extends moodleform_mod {
         $mform->addGroup($securitymeasuresarray, 'securitymeasuresarray', get_string('s_securitymeasures', 'reader'), array(' '), false);
 
         $mform->addElement('selectyesno', 'popup', get_string("popup", "quiz"));
-        //$mform->setHelpButton('popup', array("popup", get_string("popup", "quiz"), "quiz"));
+
         if (isset($readercfg->reader_fix_popup))
-          $mform->setAdvanced('popup', $readercfg->reader_fix_popup);
+            $mform->setAdvanced('popup', $readercfg->reader_fix_popup);
+        
         if (isset($readercfg->reader_popup))
-          $mform->setDefault('popup', $readercfg->reader_popup);
+            $mform->setDefault('popup', $readercfg->reader_popup);
 
         $mform->addElement('passwordunmask', 'password', get_string("requirepassword", "quiz"));
         $mform->setType('password', PARAM_TEXT);
-        //$mform->setHelpButton('password', array("requirepassword", get_string("requirepassword", "quiz"), "quiz"));
+
 
         if (isset($readercfg->reader_fix_password))
-          $mform->setAdvanced('password', $readercfg->reader_fix_password);
+            $mform->setAdvanced('password', $readercfg->reader_fix_password);
+        
         if (isset($readercfg->reader_password))
-          $mform->setDefault('password', $readercfg->reader_password);
+            $mform->setDefault('password', $readercfg->reader_password);
 
         $mform->addElement('text', 'subnet', get_string("requiresubnet", "quiz"));
         $mform->setType('subnet', PARAM_TEXT);
-        //$mform->setHelpButton('subnet', array("requiresubnet", get_string("requiresubnet", "quiz"), "quiz"));
+
         if (isset($readercfg->reader_fix_subnet))
-          $mform->setAdvanced('subnet', $readercfg->reader_fix_subnet);
+            $mform->setAdvanced('subnet', $readercfg->reader_fix_subnet);
+        
         if (isset($readercfg->reader_subnet))
-          $mform->setDefault('subnet', $readercfg->reader_subnet);
+            $mform->setDefault('subnet', $readercfg->reader_subnet);
         
         $mform->addElement('select', 'individualstrictip', get_string('s_individualstrictip', 'reader'), array('0'=>'No', '1'=>'yes'));
         
@@ -143,7 +140,6 @@ class mod_reader_mod_form extends moodleform_mod {
         
         
         $mform->setType('subnet', PARAM_TEXT);
-        //$mform->setHelpButton('subnet', array("requiresubnet", get_string("requiresubnet", "quiz"), "quiz"));
         
         //-----
         $mform->setDefault('timelimit', $readercfg->reader_quiztimeout);
@@ -159,10 +155,13 @@ class mod_reader_mod_form extends moodleform_mod {
         $mform->setDefault('questionmark', $readercfg->reader_questionmark);
         $mform->setDefault('bookcovers', $readercfg->reader_bookcovers);
         $mform->setDefault('attemptsofday', $readercfg->reader_attemptsofday);
+        
         if (isset($readercfg->reader_goal))
-          $mform->setDefault('goal', $readercfg->reader_goal);
+            $mform->setDefault('goal', $readercfg->reader_goal);
+        
         if (isset($readercfg->reader_secmeass))
-          $mform->setDefault('secmeass', $readercfg->reader_secmeass);
+            $mform->setDefault('secmeass', $readercfg->reader_secmeass);
+        
         $mform->setDefault('levelcheck', $readercfg->reader_levelcheck);
         
         $mform->setDefault('reportwordspoints', $readercfg->reader_reportwordspoints);
@@ -173,15 +172,11 @@ class mod_reader_mod_form extends moodleform_mod {
 
         if ($readercfg->reader_usecourse == 0) {
             $mform->setDefault('usecourse', $COURSE->id);
-        }
-        else
-        {
+        } else {
             $mform->setDefault('usecourse', $readercfg->reader_usecourse);
         }
         
-        //if ($mform->timelimit != 0 || !isset($mform->timelimit)) {
-            $mform->setDefault('timelimitenable', 1);
-        //}
+        $mform->setDefault('timelimitenable', 1);
         
 //-------------------------------------------------------------------------------
         // add standard elements, common to all modules

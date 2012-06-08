@@ -1,9 +1,9 @@
-<?php // $Id: ,v 1.0 2008/01/20 16:10:00 Serafim Panov
+<?php  // $Id:,v 2.0 2012/05/20 16:10:00 Serafim Panov
 
     require_once("../../config.php");
     require_once("lib.php");
 
-    $id = optional_param('id', 0, PARAM_INT); // Course Module ID, or
+    $id        = required_param('id', PARAM_INT); 
     
     if (!$course = $DB->get_record("course", array( "id" => $id))) {
         error("Course ID is incorrect");
@@ -13,45 +13,31 @@
     
     add_to_log($course->id, "Reader", "view all", "index.php?id=$course->id", "");
     
-
-    $PAGE->set_url('/mod/reader/index.php', array('id' => $cm->id));
+    $PAGE->set_url('/mod/reader/index.php', array('id' => $id));
     
-    $title = $course->shortname . ': ' . format_string($reader->name);
+    $title = $course->shortname;
     $PAGE->set_title($title);
     $PAGE->set_heading($course->fullname);
-    /*
-
-    $navlinks = array ();
-    $navlinks[] = array ('name' => get_string('modulenameplural', 'reader'), 'link' => 'index.php?id='.$course->id, 'type' => 'activity');
-    $navigation = build_navigation($navlinks);
-
-    print_header_simple(get_string('modulenameplural', 'reader'), "", $navigation, "", "", true, '', '');
-                 
-    */
-                 
+    
     if (! $displays = get_all_instances_in_course("reader", $course)) {
-        notice("There are no displays", "../../course/view.php?id=$course->id");
+        notice("There are no displays", new moodle_url("/course/view.php", array("id" => $course->id)));
         die;
     }
     
     echo $OUTPUT->header();
     
+    echo html_writer::empty_tag('br');
     
-    $timenow = time();
-    
-    echo "<br />";
-    
-    print_simple_box_start('center', '500', '#ffffff', 10); 
+    echo $OUTPUT->box_start('generalbox');
 
     foreach ($displays as $display) {
-
-        echo '<a href="view.php?id='.$display->coursemodule.'">'.$display->name.'</a><br />';
-
+        echo html_writer::link(new moodle_url('/mod/reader/view.php', array('id'=>$display->coursemodule)), $display->name);
+        echo html_writer::empty_tag('br');
     }
 
-    print_simple_box_end();
+    echo $OUTPUT->box_end();
 
-    echo "<br />";
+    echo html_writer::empty_tag('br');
 
     echo $OUTPUT->footer();
 

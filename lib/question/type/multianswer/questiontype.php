@@ -13,14 +13,7 @@ class back_multianswer_qtype {
         $status = true;
 
         //Get the multianswers array
-        /* OLD LINES START **
         $multianswers = $info['#']['MULTIANSWERS']['0']['#']['MULTIANSWER'];
-        ** OLD LINES STOP **/
-        if (empty($info['#']['MULTIANSWERS']['0']['#']['MULTIANSWER'])) {
-            $multianswers = array();
-        } else {
-            $multianswers = $info['#']['MULTIANSWERS']['0']['#']['MULTIANSWER'];
-        }
         //Iterate over multianswers
         for($i = 0; $i < sizeof($multianswers); $i++) {
             $mul_info = $multianswers[$i];

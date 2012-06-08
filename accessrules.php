@@ -180,15 +180,15 @@ class reader_access_manager {
     public function show_attempt_timer_if_needed($attempt, $timenow) {
         global $PAGE;
         $timeleft = false;
-        //print_r ($attempt);
+
         foreach ($this->_rules as $rule) {
             $ruletimeleft = $rule->time_left($attempt, $timenow);
-            //echo $ruletimeleft."!!";
+
             if ($ruletimeleft !== false && ($timeleft === false || $ruletimeleft < $timeleft)) {
                 $timeleft = $ruletimeleft;
             }
         }
-        //$timeleft = time()+260;
+
         if ($timeleft !== false) {
             // Make sure the timer starts just above zero. If $timeleft was <= 0, then
             // this will just have the effect of causing the quiz to be submitted immediately.
@@ -502,33 +502,9 @@ abstract class reader_access_rule_base {
      * @return mixed false if there is no deadline, of the time left in seconds if there is one.
      */
     public function time_left($attempt, $timenow) {
-        //echo "7634756435";
         return false;
     }
 }
-
-/**
- * A rule controlling the number of attempts allowed.
- *
- * @copyright  2009 Tim Hunt
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
- /*
-class num_attempts_access_rule extends reader_access_rule_base {
-    public function description() {
-        return get_string('attemptsallowedn', 'quiz', $this->_quiz->attempts);
-    }
-    public function prevent_new_attempt($numprevattempts, $lastattempt) {
-        if ($numprevattempts >= $this->_quiz->attempts) {
-            return get_string('nomoreattempts', 'quiz');
-        }
-        return false;
-    }
-    public function is_finished($numprevattempts, $lastattempt) {
-        return $numprevattempts >= $this->_quiz->attempts;
-    }
-}
-*/
 
 /**
  * A rule enforcing open and close dates.
@@ -565,13 +541,6 @@ class open_close_date_access_rule1 extends reader_access_rule_base {
         return $this->_quiz->timeclose && $this->_timenow > $this->_quiz->timeclose;
     }
     public function time_left($attempt, $timenow) {
-        // If this is a teacher preview after the close date, do not show
-        // the time.
-        //print_r ($this->_quiz);
-        //$this->_quiz->timeclose = $this->_quiz->timelimit * 60;
-        
-        //echo "[".$this->_quiz->timeclose."/".$timenow."]";
-        
         if ($attempt->preview && $timenow > $this->_quiz->timeclose) {
             return false;
         }
@@ -588,264 +557,4 @@ class open_close_date_access_rule1 extends reader_access_rule_base {
     }
 }
 
-/**
- * A rule imposing the delay between attempts settings.
- *
- * @copyright  2009 Tim Hunt
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
- /*
-class inter_attempt_delay_access_rule extends reader_access_rule_base {
-    public function prevent_new_attempt($numprevattempts, $lastattempt) {
-        if ($this->_quiz->attempts > 0 && $numprevattempts >= $this->_quiz->attempts) {
-            // No more attempts allowed anyway.
-            return false;
-        }
-        if ($this->_quiz->timeclose != 0 && $this->_timenow > $this->_quiz->timeclose) {
-            // No more attempts allowed anyway.
-            return false;
-        }
-        $nextstarttime = $this->compute_next_start_time($numprevattempts, $lastattempt);
-        if ($this->_timenow < $nextstarttime) {
-            if ($this->_quiz->timeclose == 0 || $nextstarttime <= $this->_quiz->timeclose) {
-                return get_string('youmustwait', 'quiz', userdate($nextstarttime));
-            } else {
-                return get_string('youcannotwait', 'quiz');
-            }
-        }
-        return false;
-    }
 
-    public function compute_next_start_time($numprevattempts, $lastattempt) {
-        if ($numprevattempts == 0) {
-            return 0;
-        }
-
-        $lastattemptfinish = $lastattempt->timefinish;
-        if ($this->_quiz->timelimit > 0) {
-            $lastattemptfinish = min($lastattemptfinish,
-                    $lastattempt->timestart + $this->_quiz->timelimit);
-        }
-
-        if ($numprevattempts == 1 && $this->_quiz->delay1) {
-            return $lastattemptfinish + $this->_quiz->delay1;
-        } else if ($numprevattempts > 1 && $this->_quiz->delay2) {
-            return $lastattemptfinish + $this->_quiz->delay2;
-        }
-        return 0;
-    }
-
-    public function is_finished($numprevattempts, $lastattempt) {
-        $nextstarttime = $this->compute_next_start_time($numprevattempts, $lastattempt);
-        return $this->_timenow <= $nextstarttime &&
-                $this->_quiz->timeclose != 0 && $nextstarttime >= $this->_quiz->timeclose;
-    }
-}
-*/
-/**
- * A rule implementing the ipaddress check against the ->submet setting.
- *
- * @copyright  2009 Tim Hunt
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
- /*
-class ipaddress_access_rule extends reader_access_rule_base {
-    public function prevent_access() {
-        if (address_in_subnet(getremoteaddr(), $this->_quiz->subnet)) {
-            return false;
-        } else {
-            return get_string('subnetwrong', 'quiz');
-        }
-    }
-}
-*/
-/**
- * A rule representing the password check. It does not actually implement the check,
- * that has to be done directly in attempt.php, but this facilitates telling users about it.
- *
- * @copyright  2009 Tim Hunt
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
- /*
-class password_access_rule extends reader_access_rule_base {
-    public function description() {
-        return get_string('requirepasswordmessage', 'quiz');
-    }
-
-    public function clear_access_allowed() {
-        global $SESSION;
-        if (!empty($SESSION->passwordcheckedquizzes[$this->_quiz->id])) {
-            unset($SESSION->passwordcheckedquizzes[$this->_quiz->id]);
-        }
-    }
-
-    public function do_password_check($canpreview, $accessmanager) {
-        global $CFG, $SESSION, $OUTPUT, $PAGE;
-
-        // We have already checked the password for this quiz this session, so don't ask again.
-        if (!empty($SESSION->passwordcheckedquizzes[$this->_quiz->id])) {
-            return;
-        }
-
-        // If the user cancelled the password form, send them back to the view page.
-        if (optional_param('cancelpassword', false, PARAM_BOOL)) {
-            $accessmanager->back_to_view_page($canpreview);
-        }
-
-        // If they entered the right password, let them in.
-        $enteredpassword = optional_param('quizpassword', '', PARAM_RAW);
-        $validpassword = false;
-        if (strcmp($this->_quiz->password, $enteredpassword) === 0) {
-            $validpassword = true;
-        } else if (isset($this->_quiz->extrapasswords)) {
-            // group overrides may have additional passwords
-            foreach ($this->_quiz->extrapasswords as $password) {
-                if (strcmp($password, $enteredpassword) === 0) {
-                    $validpassword = true;
-                    break;
-                }
-            }
-        }
-        if ($validpassword) {
-            $SESSION->passwordcheckedquizzes[$this->_quiz->id] = true;
-            return;
-        }
-
-        // User entered the wrong password, or has not entered one yet, so display the form.
-        $output = '';
-
-        // Start the page and print the quiz intro, if any.
-        if ($accessmanager->securewindow_required($canpreview)) {
-            $accessmanager->setup_secure_page($this->_readerobj->get_course()->shortname . ': ' .
-                    format_string($this->_readerobj->get_reader_name()));
-        } else if ($accessmanager->safebrowser_required($canpreview)) {
-            $PAGE->set_title($this->_readerobj->get_course()->shortname . ': ' .
-                    format_string($this->_readerobj->get_reader_name()));
-            $PAGE->set_cacheable(false);
-            echo $OUTPUT->header();
-        } else {
-            $PAGE->set_title(format_string($this->_readerobj->get_reader_name()));
-            echo $OUTPUT->header();
-        }
-
-        if (trim(strip_tags($this->_quiz->intro))) {
-            $output .= $OUTPUT->box(format_module_intro('quiz', $this->_quiz,
-                    $this->_readerobj->get_cmid()), 'generalbox', 'intro');
-        }
-        $output .= $OUTPUT->box_start('generalbox', 'passwordbox');
-
-        // If they have previously tried and failed to enter a password, tell them it was wrong.
-        if (!empty($enteredpassword)) {
-            $output .= '<p class="notifyproblem">' . get_string('passworderror', 'quiz') . '</p>';
-        }
-
-        // Print the password entry form.
-        $output .= '<p>' . get_string('requirepasswordmessage', 'quiz') . "</p>\n";
-        $output .= '<form id="passwordform" method="post" action="' . $CFG->wwwroot .
-                '/mod/quiz/startattempt.php" onclick="this.autocomplete=\'off\'">' . "\n";
-        $output .= "<div>\n";
-        $output .= '<label for="quizpassword">' . get_string('password') . "</label>\n";
-        $output .= '<input name="quizpassword" id="quizpassword" type="password" value=""/>' . "\n";
-        $output .= '<input name="cmid" type="hidden" value="' .
-                $this->_readerobj->get_cmid() . '"/>' . "\n";
-        $output .= '<input name="sesskey" type="hidden" value="' . sesskey() . '"/>' . "\n";
-        $output .= '<input type="submit" value="' . get_string('ok') . '" />';
-        $output .= '<input type="submit" name="cancelpassword" value="' .
-                get_string('cancel') . '" />' . "\n";
-        $output .= "</div>\n";
-        $output .= "</form>\n";
-
-        // Finish page.
-        $output .= $OUTPUT->box_end();
-
-        // return or display form.
-        echo $output;
-        echo $OUTPUT->footer();
-        exit;
-    }
-}
-*/
-/**
- * A rule representing the time limit. It does not actually restrict access, but we use this
- * class to encapsulate some of the relevant code.
- *
- * @copyright  2009 Tim Hunt
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
- /*
-class time_limit_access_rule extends reader_access_rule_base {
-    public function description() {
-        return get_string('quiztimelimit', 'quiz', format_time($this->_quiz->timelimit));
-    }
-    public function time_left($attempt, $timenow) {
-        return $attempt->timestart + $this->_quiz->timelimit - $timenow;
-    }
-}
-*/
-/**
- * A rule for ensuring that the quiz is opened in a popup, with some JavaScript
- * to prevent copying and pasting, etc.
- *
- * @copyright  2009 Tim Hunt
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
- /*
-class securewindow_access_rule extends reader_access_rule_base {
-    public static $popupoptions = array(
-        'left' => 0,
-        'top' => 0,
-        'fullscreen' => true,
-        'scrollbars' => true,
-        'resizeable' => false,
-        'directories' => false,
-        'toolbar' => false,
-        'titlebar' => false,
-        'location' => false,
-        'status' => false,
-        'menubar' => false,
-    );
-
-
-    public function make_review_link($linktext, $attemptid) {
-        global $OUTPUT;
-        $url = $this->_readerobj->review_url($attemptid);
-        $button = new single_button($url, $linktext);
-        $button->add_action(new popup_action('click', $url, 'quizpopup', self::$popupoptions));
-        return $OUTPUT->render($button);
-    }
-
-    public function setup_secure_page($title, $headtags=null) {
-        global $OUTPUT, $PAGE;
-        $PAGE->set_popup_notification_allowed(false);//prevent message notifications
-        $PAGE->set_title($title);
-        $PAGE->set_cacheable(false);
-        $PAGE->set_pagelayout('popup');
-        $PAGE->add_body_class('quiz-secure-window');
-        $PAGE->requires->js_init_call('M.mod_quiz.secure_window.init', null, false,
-                reader_get_js_module());
-        echo $OUTPUT->header();
-    }
-}
-*/
-
-/**
- * A rule representing the safe browser check.
- *
- * @copyright  2009 Oliver Rahs
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
- /*
-class safebrowser_access_rule extends reader_access_rule_base {
-    public function prevent_access() {
-        if (!$this->_readerobj->is_preview_user() && !quiz_check_safe_browser()) {
-            return get_string('safebrowsererror', 'quiz');
-        } else {
-            return false;
-        }
-    }
-
-    public function description() {
-        return get_string("safebrowsernotice", "quiz");
-    }
-}
-*/
