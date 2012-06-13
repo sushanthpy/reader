@@ -125,15 +125,15 @@
     
     $bookcovers           = "";
     $bookcoversinprevterm = "";
-    $bookcoversinthisterm = '';
+    $bookcoversinthisterm = "";
         
     if ($oldattempts = $DB->get_records_sql("SELECT * FROM {reader_attempts} WHERE userid= ? and timefinish <= ? ORDER BY timefinish", array($USER->id, $reader->ignordate))) {
         foreach ($oldattempts as $oldattempt) {
             //-----------------Book old covers------------------//
             if ($reader->bookcovers == 1 && strtolower($oldattempt->passed) == 'true') {
                 $bookdata = $DB->get_record("reader_publisher", array( "id" => $oldattempt->quizid));
-                $imagelink = new moodle_url('/mod/reader/images.php/'.$reader->usecourse.'/images/'.$bookdata->image);
-                $bookcoversinprevterm .= html_writer::tag('img', array('src'=>$imagelink, 'border'=>0, 'alt'=>$bookdata->name, 'height'=>150, 'width'=>100));
+                $imagelink = new moodle_url('/mod/reader/images.php/reader/images/'.$bookdata->image);
+                $bookcoversinprevterm .= html_writer::empty_tag('img', array('src'=>$imagelink, 'border'=>0, 'alt'=>$bookdata->name, 'height'=>150, 'width'=>100));
             }
             //----------------------------------------------//
         }
@@ -148,8 +148,8 @@
                 
             //-----------------Book covers------------------//
             if ($reader->bookcovers == 1 && $attemptdata_['status'] == 'correct') {
-                $imagelink = new moodle_url('/mod/reader/images.php/'.$reader->usecourse.'/images/'.$attemptdata_['image']);
-                $bookcoversinprevterm .= html_writer::tag('img', array('src'=>$imagelink, 'border'=>0, 'alt'=>$attemptdata_['booktitle'], 'height'=>150, 'width'=>100));
+                $imagelink = new moodle_url('/mod/reader/images.php/reader/images/'.$attemptdata_['image']);
+                $bookcoversinprevterm .= html_writer::empty_tag('img', array('src'=>$imagelink, 'border'=>0, 'alt'=>$attemptdata_['booktitle'], 'height'=>150, 'width'=>100));
             }
             //----------------------------------------------//
                 

@@ -107,6 +107,7 @@
     $studentusername         = optional_param('studentusername', NULL, PARAM_CLEAN); 
     $bookquiznumber          = optional_param('bookquiznumber', 0, PARAM_INT); 
     $importstudentrecorddata = optional_param('importstudentrecorddata', 0, PARAM_INT); 
+    $noqstudents             = optional_param_array('noqstudents', 0, PARAM_INT); 
     
     $readercfg = get_config('reader');
 
@@ -600,13 +601,13 @@
 /*
 * Award Extra Points
 */
-    if (has_capability('mod/reader:manage', $contextmodule) && $act == "awardextrapoints" && $award && $student) {
+    if (has_capability('mod/reader:manage', $contextmodule) && $act == "assignpointsbookshavenoquizzes" && $book) {
         $useridold = $USER->id;
-        if ($bookdata = $DB->get_record("reader_publisher", array("name"=>$award))) {
-            foreach ($student as $student_) {
+        if ($bookdata = $DB->get_record("reader_noquiz", array("id"=>$book))) {
+            foreach ($noqstudents as $student_) {
                 if(!$attemptnumber = (int)$DB->get_field_sql('SELECT MAX(attempt)+1 FROM ' .
                         "{reader_attempts} WHERE reader = ? AND " .
-                        "userid = ? AND timefinish > 0 AND preview != 1", array($reader->id, $student_))) {
+                        "userid = ? AND timefinish > 0", array($reader->id, $student_))) {
                     $attemptnumber = 1;
                 }
                 
@@ -643,6 +644,8 @@
                 $DB->update_record("reader_attempts", $attemptnew);
                 
                 add_to_log($course->id, "reader", "AWP (userid: {$student_}; set: {$award})", "admin.php?id=$id", "$cm->instance");
+                
+                $message = get_string("done", "reader");
             }
         }
         $USER->id = $useridold;
@@ -4051,6 +4054,9 @@
 * Book no quizzes record
 */
     } else if ($act == "assignpointsbookshavenoquizzes" && has_capability('mod/reader:changestudentslevelsandpromote', $contextmodule)) {
+        if(@isset($message))
+            reader_red_notice($message);
+    
         $table = new html_table();
         
         $titlesarray = array (html_writer::empty_tag('input', array('type'=>'button', 'value'=>get_string('selectall', 'reader'), 'onclick'=>'checkall();'))=>'', 'Image'=>'', 'Username'=>'username', 'Fullname<br />Click to view screen'=>'fullname', 'Current level'=>'currentlevel', 'Total words<br /> this term'=>'totalwordsthisterm', 'Total words<br /> all terms'=>'totalwordsallterms');
@@ -4098,7 +4104,7 @@
                         $link = reader_fullname_link_t($coursestudent);
                     }
                     
-                    $table->data[] = array (html_writer::empty_tag('input', array('type'=>'checkbox', 'name'=>'noquizuserid[]', 'value'=>$coursestudent->id)),
+                    $table->data[] = array (html_writer::empty_tag('input', array('type'=>'checkbox', 'name'=>'noqstudents[]', 'value'=>$coursestudent->id)),
                                             $picture,
                                             reader_user_link_t($coursestudent),
                                             $link,
@@ -4113,7 +4119,7 @@
                         $link = reader_fullname_link_t($coursestudent);
                     }
                     
-                    $table->data[] = array (html_writer::empty_tag('input', array('type'=>'checkbox', 'name'=>'noquizuserid[]', 'value'=>$coursestudent->id)),
+                    $table->data[] = array (html_writer::empty_tag('input', array('type'=>'checkbox', 'name'=>'noqstudents[]', 'value'=>$coursestudent->id)),
                                             $picture,
                                             reader_user_link_t($coursestudent),
                                             $link,
@@ -4177,8 +4183,6 @@
         $o .= html_writer::end_tag('table');
         $o .= html_writer::end_tag('center');
         
-        echo $o;
-        
         //--------------------------------------------//
         
         reader_select_perpage($id, $act, $sort, $orderby, $grid);
@@ -4187,15 +4191,17 @@
         
         $alinkpadding     = new moodle_url("/mod/reader/admin.php", array("a"=>"admin", "id"=>$id, "act"=>$act, "grid"=>$grid, "sort"=>$sort, "orderby"=>$orderby, "book"=>$book));
 
-        echo $OUTPUT->render(new paging_bar($totalcount, $page, $perpage, $alinkpadding)); 
+        $o .= $OUTPUT->render(new paging_bar($totalcount, $page, $perpage, $alinkpadding)); 
         
         if ($table) {
-            echo html_writer::table($table);
+            $o .= html_writer::table($table);
         }
         
-        echo html_writer::end_tag('form');
+        $o .= html_writer::end_tag('form');
         
-        echo $OUTPUT->render(new paging_bar($totalcount, $page, $perpage, $alinkpadding)); 
+        $o .= $OUTPUT->render(new paging_bar($totalcount, $page, $perpage, $alinkpadding)); 
+        
+        echo $o;
 
 
 /*

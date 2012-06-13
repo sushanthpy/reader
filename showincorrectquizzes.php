@@ -3,8 +3,8 @@
     require_once("../../config.php");
     require_once("lib.php");
     
-    $id        = required_param('id', 0, PARAM_INT); 
-    $uid       = required_param('uid', 0, PARAM_INT); 
+    $id        = required_param('id', PARAM_INT); 
+    $uid       = required_param('uid', PARAM_INT); 
 
     if (!$cm = get_coursemodule_from_id('reader', $id)) {
         print_error('invalidcoursemodule');
