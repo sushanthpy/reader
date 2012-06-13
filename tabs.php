@@ -30,7 +30,7 @@
     $row[]  = new tabobject('admin', new moodle_url("/mod/reader/admin.php", array('a'=>'admin', 'id'=>$idh)), "Admin Area");
     
     if (has_capability('mod/reader:manage', $contextmodule)) {
-        $row[]  = new tabobject('readersettings', new moodle_url("/course/mod.php", array('update'=>$cm->id, 'return'=>'true', 'sesskey'=>sesskey())), "Change the main Reader settings");
+        $row[]  = new tabobject('readersettings', new moodle_url("/course/mod.php", array('update'=>$cm->id, 'return'=>'true', 'sesskey'=>sesskey())), "Main Settings");
     }
 
     $tabs[] = $row;

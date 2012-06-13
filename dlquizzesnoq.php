@@ -114,214 +114,79 @@
     }
     
     
-    if (!is_array($quiz)) {
-        echo $OUTPUT->box_start('generalbox');
-        
-        $o  = "";
-        $o .= html_writer::start_tag('form', array('action'=>new moodle_url('/mod/reader/dlquizzesnoq.php', array('id'=>$id)), 'method'=>'post', 'id'=>'mform1'));
-        $o .= html_writer::start_tag('div', array('class'=>'w-600'));
-        $o .= html_writer::link('#', 'Show All', array('onclick'=>'myexpandall();return false;'));
-        $o .= ' / ';
-        $o .= html_writer::link('#', 'Hide All', array('onclick'=>'mycollapseall();return false;'));
-        $o .= html_writer::empty_tag('br');
 
-        $cp = 0;
+    echo $OUTPUT->box_start('generalbox');
+    
+    $o  = "";
+    $o .= html_writer::start_tag('form', array('action'=>new moodle_url('/mod/reader/dlquizzes_proccess-noq.php', array('id'=>$id)), 'method'=>'post', 'id'=>'mform1'));
+    $o .= html_writer::start_tag('div', array('class'=>'w-600'));
+    $o .= html_writer::link('#', 'Show All', array('onclick'=>'myexpandall();return false;'));
+    $o .= ' / ';
+    $o .= html_writer::link('#', 'Hide All', array('onclick'=>'mycollapseall();return false;'));
+    $o .= html_writer::empty_tag('br');
 
-        if ($quizzes) {
-            foreach ($quizzes as $publiher => $datas) {
+    $cp = 0;
+
+    if ($quizzes) {
+        foreach ($quizzes as $publiher => $datas) {
+            $cp++;
+            $o .= html_writer::empty_tag('br');
+            $o .= html_writer::start_tag('a', array('href'=>'#','onclick'=>'mytoggle(\'comments_'.$cp.'\');return false'));
+            $o .= html_writer::start_tag('span', array('id'=>'comments_'.$cp.'indicator'));
+            $o .= html_writer::empty_tag('img', array('src'=>$reader_images['open'], 'alt'=>'Opened folder'));
+            $o .= html_writer::end_tag('span');
+            $o .= html_writer::end_tag('a');
+            $o .= html_writer::tag('b', $publiher, array('class'=>'dl-title'));
+            $o .= html_writer::start_tag('span', array('id'=>'comments_'.$cp));
+            $o .= html_writer::empty_tag('input', array('type'=>'checkbox', 'name'=>'installall['.$cp.']', 'onclick'=>'setChecked(this,'.$checkboxdatapublishers[$publiher][0].','.end($checkboxdatapublishers[$publiher]).')', 'value'=>''));
+            $o .= html_writer::tag('span', 'Install All', array('id'=>'seltext_'.$cp, 'class'=>'ml-10'));
+
+            foreach ($datas as $level => $quizzesdata) {
                 $cp++;
-                $o .= html_writer::empty_tag('br');
-                $o .= html_writer::start_tag('a', array('href'=>'#','onclick'=>'mytoggle(\'comments_'.$cp.'\');return false'));
+                
+                $o .= html_writer::start_tag('div', array('class'=>'dl-page-box1'));
+                $o .= html_writer::start_tag('a', array('href'=>'#', 'onclick'=>'mytoggle(\'comments_'.$cp.'\');return false'));
                 $o .= html_writer::start_tag('span', array('id'=>'comments_'.$cp.'indicator'));
                 $o .= html_writer::empty_tag('img', array('src'=>$reader_images['open'], 'alt'=>'Opened folder'));
                 $o .= html_writer::end_tag('span');
                 $o .= html_writer::end_tag('a');
-                $o .= html_writer::tag('b', $publiher, array('class'=>'dl-title'));
+
+                if ($needpassword[$publiher][$level] == "true") {
+                    $o .= html_writer::empty_tag('img', array('src'=>$reader_images['pw'], 'width'=>'23', 'height'=>'15', 'alt'=>'Need password'));
+                }
+                
+                $o .= html_writer::tag('b', $level, array('class'=>'dl-title'));
+                
                 $o .= html_writer::start_tag('span', array('id'=>'comments_'.$cp));
-                $o .= html_writer::empty_tag('input', array('type'=>'checkbox', 'name'=>'installall['.$cp.']', 'onclick'=>'setChecked(this,'.$checkboxdatapublishers[$publiher][0].','.end($checkboxdatapublishers[$publiher]).')', 'value'=>''));
+                $o .= html_writer::empty_tag('input', array('type'=>'checkbox', 'name'=>'installall['.$cp.']', 'onclick'=>'setChecked(this,'.$checkboxdatalevels[$publiher][$level][0].','.end($checkboxdatalevels[$publiher][$level]).')', 'value'=>''));
                 $o .= html_writer::tag('span', 'Install All', array('id'=>'seltext_'.$cp, 'class'=>'ml-10'));
+                $o .= html_writer::tag('div', '', array('class'=>'mt-10'));
 
-                foreach ($datas as $level => $quizzesdata) {
-                    $cp++;
-                    
-                    $o .= html_writer::start_tag('div', array('class'=>'dl-page-box1'));
-                    $o .= html_writer::start_tag('a', array('href'=>'#', 'onclick'=>'mytoggle(\'comments_'.$cp.'\');return false'));
-                    $o .= html_writer::start_tag('span', array('id'=>'comments_'.$cp.'indicator'));
-                    $o .= html_writer::empty_tag('img', array('src'=>$reader_images['open'], 'alt'=>'Opened folder'));
-                    $o .= html_writer::end_tag('span');
-                    $o .= html_writer::end_tag('a');
-
-                    if ($needpassword[$publiher][$level] == "true") {
-                        $o .= html_writer::empty_tag('img', array('src'=>$reader_images['pw'], 'width'=>'23', 'height'=>'15', 'alt'=>'Need password'));
-                    }
-                    
-                    $o .= html_writer::tag('b', $level, array('class'=>'dl-title'));
-                    
-                    $o .= html_writer::start_tag('span', array('id'=>'comments_'.$cp));
-                    $o .= html_writer::empty_tag('input', array('type'=>'checkbox', 'name'=>'installall['.$cp.']', 'onclick'=>'setChecked(this,'.$checkboxdatalevels[$publiher][$level][0].','.end($checkboxdatalevels[$publiher][$level]).')', 'value'=>''));
-                    $o .= html_writer::tag('span', 'Install All', array('id'=>'seltext_'.$cp, 'class'=>'ml-10'));
-                    $o .= html_writer::tag('div', '', array('class'=>'mt-10'));
-
-                    foreach ($quizzesdata as $quizid => $quiztitle) {
-                        $o .= html_writer::start_tag('div', array('class'=>'pl-20'));
-                        $o .= html_writer::empty_tag('input', array('type'=>'checkbox', 'name'=>'quiz[]', 'id'=>'quiz_'.$quizzescountid[$quizid], 'value'=>$quizid));
-                        $o .= html_writer::tag('span', $quiztitle, array('class'=>'ml-10'));
-                        $o .= html_writer::end_tag('div');
-                    }
-                    $o .= html_writer::end_tag('span');
+                foreach ($quizzesdata as $quizid => $quiztitle) {
+                    $o .= html_writer::start_tag('div', array('class'=>'pl-20'));
+                    $o .= html_writer::empty_tag('input', array('type'=>'checkbox', 'name'=>'quiz[]', 'id'=>'quiz_'.$quizzescountid[$quizid], 'value'=>$quizid));
+                    $o .= html_writer::tag('span', $quiztitle, array('class'=>'ml-10'));
                     $o .= html_writer::end_tag('div');
                 }
                 $o .= html_writer::end_tag('span');
+                $o .= html_writer::end_tag('div');
             }
-            
-            $o .= html_writer::start_tag('div', array('class'=>'dl-page-install'));
-            $o .= html_writer::empty_tag('input', array('type'=>'submit', 'name'=>'downloadquizzes', 'value'=>'Install Quizzes'));
-            $o .= html_writer::end_tag('div');
+            $o .= html_writer::end_tag('span');
         }
         
-        $o .= html_writer::empty_tag('input', array('type'=>'hidden', 'name'=>'step', 'value'=>'1'));
+        $o .= html_writer::start_tag('div', array('class'=>'dl-page-install'));
+        $o .= html_writer::empty_tag('input', array('type'=>'submit', 'name'=>'downloadquizzes', 'value'=>'Install Quizzes'));
         $o .= html_writer::end_tag('div');
-        $o .= html_writer::end_tag('form');
-        
-        echo $o;
-        
-        echo $OUTPUT->box_end();
-    } else {
-        $listofpublishers = reader_curlfile("{$readercfg->reader_serverlink}/index-noq.php?a=publishers&login={$readercfg->reader_serverlogin}&password={$readercfg->reader_serverpassword}");
-        $listofpublishers = xmlize(reader_makexml($listofpublishers));
-    
-        foreach ($listofpublishers['myxml']['#']['item'] as $listofpublisher) {
-            $quizzes[$listofpublisher['@']['publisher']][$listofpublisher['@']['level']][$listofpublisher['@']['id']] = $listofpublisher['#'];
-        }
-    
-        //Check Passwords
-        if ($step == 1) {
-            $postzapros = array('quiz'=>$quiz);
-        } else {
-            $postzapros = array('password'=>$password, 'quiz'=>$quiz);
-        }
-        $listofpublishers = xmlize(reader_file("{$readercfg->reader_serverlink}/index-noq.php?a=quizzes&login={$readercfg->reader_serverlogin}&password={$readercfg->reader_serverpassword}", $postzapros));
-        foreach ($listofpublishers['myxml']['#']['item'] as $listofpublisher) {
-            $publishers[$listofpublisher['@']['publisher']][$listofpublisher['@']['level']]['pass'] = $listofpublisher['#'];
-            if (isset($listofpublisher['@']['status'])) {
-                $publishers[$listofpublisher['@']['publisher']][$listofpublisher['@']['level']]['status'] = $listofpublisher['@']['status'];
-            }
-        }
-        
-        //Passwords form
-        $passprefix = "";
-        
-        class reader_uploadbooks_form extends moodleform {
-            function definition() {
-                global $CFG,$DB,$course,$password,$publishers,$passprefix,$second,$quizzes,$removequizzes,$step,$id,$readercfg,$reader,$readercourseexist,$quiz,$reader_images,$OUTPUT;
-                
-                $o = '';
-                
-                if (empty($puttocourse)) $puttocourse = $course->id;
-
-                $mform    =& $this->_form;
-                
-                echo $OUTPUT->box_start('generalbox');
-                echo get_string("quizzesmustbeinstalled", "reader");
-                echo $OUTPUT->box_end();
-                
-                $mform->addElement('header','general', get_string('select_course', 'reader')); 
-                
-                if ($readercfg->reader_usecourse) $puttocourse = $readercfg->reader_usecourse;
-                if ($reader->usecourse)     $puttocourse = $reader->usecourse;
-                
-                if (empty($puttocourse)) { 
-                    $readercourseexist = $DB->get_record("course", array("shortname" => "Reader"));
-                    $puttocourse = $readercourseexist->id;
-                }
-                
-                if (empty($puttocourse)) 
-                    $selectcourseform[0] = 'Create new course';
-                
-                $courses = get_courses();
-                
-                foreach ($courses as $course) {
-                    if ($course->id != 1)
-                      $selectcourseform[$course->id] = $course->fullname;
-                }
-                
-                $mform->addElement('select', 'courseid', get_string('use_this_course', 'reader'), $selectcourseform);
-                
-                if (empty($puttocourse)) {
-                    $mform->setDefault('courseid', 0);
-                } else {
-                    $mform->setDefault('courseid', $puttocourse);
-                }
-                
-                $currentcoursesections = $DB->get_records("course_sections", array("course" => $puttocourse));
-                
-                $tocourse = $DB->get_record("course", array("id" => $puttocourse));
-                $t = 0;
-                foreach ($currentcoursesections as $currentcoursesections_) {
-                    if ($t <= $tocourse->numsections) {
-                        $sectionname = strip_tags(trim(str_replace(array("\r", "\n"), "", $currentcoursesections_->summary)));
-                        if (empty($sectionname)) $sectionname = 'Section '.$currentcoursesections_->section;
-                        if (strlen($sectionname) > 25) $sectionname = substr($sectionname, 0, 25)."...";
-                        $selectsectionform[$currentcoursesections_->section] = $sectionname;
-                    }
-                    $t++;
-                }
-                
-                //--------------- END -------------------------//
-                
-                $o .= html_writer::tag('div', '', array('class'=>'clear'));
-                $o .= html_writer::start_tag('div', array('class'=>'p-20'));
-                $o .= html_writer::start_tag('div');
-                $o .= html_writer::empty_tag('input', array('type'=>'radio', 'name'=>'sectionchoosing', 'value'=>1, 'id'=>'choise1'));
-                $o .= html_writer::tag('label', get_string('s_sectiontothebottom', 'reader'), array('for'=>'choise1', 'class'=>'ml-10'));
-                $o .= html_writer::end_tag('div');
-                $o .= html_writer::start_tag('div');
-                $o .= html_writer::empty_tag('input', array('type'=>'radio', 'name'=>'sectionchoosing', 'value'=>2, 'checked'=>'checked', 'id'=>'choise2'));
-                $o .= html_writer::tag('label', get_string('s_sectiontoseparate', 'reader'), array('for'=>'choise2', 'class'=>'ml-10'));
-                $o .= html_writer::end_tag('div');
-                $o .= html_writer::start_tag('div');
-                $o .= html_writer::start_tag('div', array('class'=>'fl'));
-                $o .= html_writer::empty_tag('input', array('type'=>'radio', 'name'=>'sectionchoosing', 'value'=>3, 'id'=>'sectionradio'));
-                $o .= html_writer::tag('label', get_string('s_sectiontothissection', 'reader'), array('for'=>'sectionradio', 'class'=>'ml-10'));
-                $o .= html_writer::end_tag('div');
-                $o .= html_writer::start_tag('div', array('id'=>'loadersection', 'class'=>'dl-page-box4'));
-                $o .= html_writer::empty_tag('img', array('src'=>$reader_images['zoomloader'], 'width'=>16, 'height'=>16, 'alt'=>''));
-                $o .= html_writer::end_tag('div');
-                $o .= html_writer::tag('div', '', array('class'=>'clear'));
-                
-                $mform->addElement('html', $o);
-                
-                $mform->addElement('select', 'section', '', $selectsectionform);
-                
-                //Quizzes ID
-                foreach ($quiz as $key => $value) {
-                    if (isset($removequizzes) && is_array($removequizzes)) {
-                        if (!in_array($value, $removequizzes)) {
-                            $mform->addElement('hidden', 'quiz['.$key.']', $value);
-                        }
-                    } else {
-                        $mform->addElement('hidden', 'quiz['.$key.']', $value);
-                    }
-                }
-                
-                //Passwords form
-                foreach ($publishers as $key => $value) {
-                    foreach ($value as $key2 => $value2) {
-                        if ($value2['pass'] == 'true') {
-                            $mform->addElement('hidden', 'password['.$key.']['.$key2.']', $password[$key][$key2]);
-                        }
-                    }
-                }
-                
-                
-                $this->add_action_buttons($cancel = false, get_string('install_quizzes', 'reader'));
-            }
-        }
-        
-        $mform = new reader_uploadbooks_form('dlquizzes_proccess-noq.php?id='.$id);
-
-        $mform->display();
     }
+    
+    $o .= html_writer::empty_tag('input', array('type'=>'hidden', 'name'=>'step', 'value'=>'1'));
+    $o .= html_writer::end_tag('div');
+    $o .= html_writer::end_tag('form');
+    
+    echo $o;
+    
+    echo $OUTPUT->box_end();
+    
     
     echo $OUTPUT->box_end();
     
