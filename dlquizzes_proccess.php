@@ -496,7 +496,7 @@
         if (!empty($end)) {
             echo html_writer::start_tag('center');
             echo $OUTPUT->single_button(new moodle_url('/mod/reader/dlquizzes.php', array("id" => $id)), "Return to Quiz Selection Screen");
-            echo $OUTPUT->single_button(new moodle_url('/course/view.php', array("id" => $courseid)), "Continue");
+            echo $OUTPUT->single_button(new moodle_url('/mod/reader/admin.php', array("id" => $id, "a"=>"admin")), "Continue");
             echo html_writer::end_tag('center');
         }
     }

@@ -116,7 +116,7 @@
     
     echo html_writer::start_tag('center');
     echo $OUTPUT->single_button(new moodle_url('/mod/reader/dlquizzesnoq.php', array("id" => $id)), "Return to Quiz Selection Screen");
-    echo $OUTPUT->single_button(new moodle_url('/course/view.php', array("id" => $tocourseid)), "Continue");
+    echo $OUTPUT->single_button(new moodle_url('/mod/reader/admin.php', array("id" => $id, "a"=>"admin")), "Continue");
     echo html_writer::end_tag('center');
     
     echo $OUTPUT->box_end();
