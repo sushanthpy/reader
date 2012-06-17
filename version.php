@@ -2,6 +2,6 @@
 
     $module->version   = 2012010702;  
     $module->cron      = 3600;  
-    $module->requires  = 2011112900;  
+    $module->requires  = 2012022300;
     $module->component = 'mod_reader';
 

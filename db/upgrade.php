@@ -22,7 +22,14 @@ function xmldb_reader_upgrade($oldversion=0) {
     global $CFG, $THEME, $DB;
 
     if ($oldversion < 2012010702) {
-        $DB->execute("ALTER TABLE {reader} ADD `introformat` INT( 10 ) NULL DEFAULT '0' AFTER `intro`");
+        //$DB->execute("ALTER TABLE {reader} ADD `introformat` INT( 10 ) NULL DEFAULT '0' AFTER `intro`");
+                          
+        // Define table quiz_report to be created
+        $table = new xmldb_table('reader');
+
+        // Adding fields to table quiz_report
+        $table->add_field('introformat', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED,
+                XMLDB_NULL, XMLDB_SEQUENCE, null);
                           
         upgrade_mod_savepoint(true, 2012010702, 'reader');
     }
