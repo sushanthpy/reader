@@ -60,6 +60,8 @@
     $allowdifficultysql = substr($allowdifficultysql, 0, -1);
     if ((isset($_SESSION['SESSION']->reader_teacherview) && $_SESSION['SESSION']->reader_teacherview == "teacherview") || $reader->levelcheck == 0) $allowdifficultysql = '0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15';
     
+    $alreadyansweredbookssametitle = array();
+    
     if (list($attemptdata, $summaryattemptdata) = reader_get_student_attempts($USER->id, $reader, true, true)) {
         foreach ($attemptdata as $attemptdata_) {
             reader_set_attempt_result ($attemptdata_['id'], $reader);  //insert result

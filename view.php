@@ -307,6 +307,8 @@
         echo html_writer::end_tag('table');
     }
     
+    echo html_writer::start_tag('div', array('style'=>'float:left;'));
+    
     echo html_writer::tag('h3', get_string("yourcurrentlevel", "reader").": {$leveldata['studentlevel']}");
     
     $promoteinfo = $DB->get_record("reader_levels", array( "userid" => $USER->id,  "readerid" => $reader->id));
@@ -644,6 +646,63 @@
     }
     //-------------------------------------------//
     
+    echo html_writer::end_tag('div');
+    
+    if ($reader->levelcheck == 1) {
+        echo html_writer::start_tag('div', array('style'=>'float:right;margin: 0 0 0 50px;'));
+        
+        $o  = "";
+
+        $lmax           = $reader->quizpreviouslevel;
+        $max            = $reader->nextlevel;
+        $hmax           = $reader->quiznextlevel;
+        $lqnow          = $reader->quizpreviouslevel - $leveldata['onprevlevel'];
+        $qnow           = $reader->nextlevel - $leveldata['onthislevel'];
+        $hqnow          = $reader->quiznextlevel - $leveldata['onnextlevel'];
+
+        $spacer = html_writer::empty_tag('img', array('src'=>new moodle_url('/mod/reader/img/progress/spacer.jpg'), 'border'=>0, 'alt'=>'space', 'height'=>26, 'width'=>28, 'style'=>'margin:0 4px 0 0'));
+        $done   = html_writer::empty_tag('img', array('src'=>new moodle_url('/mod/reader/img/progress/done.jpg'), 'border'=>0, 'alt'=>'done', 'height'=>26, 'width'=>28, 'style'=>'margin:0 4px 0 0'));
+        $yet    = html_writer::empty_tag('img', array('src'=>new moodle_url('/mod/reader/img/progress/notyet.jpg'), 'border'=>0, 'alt'=>'notyet', 'height'=>26, 'width'=>28, 'style'=>'margin:0 4px 0 0'));
+        $lm1    = html_writer::empty_tag('img', array('src'=>new moodle_url('/mod/reader/img/progress/lm1.jpg'), 'border'=>0, 'alt'=>'lm1', 'height'=>16, 'width'=>28, 'style'=>'margin:0 4px 0 0'));
+        $lnow   = html_writer::empty_tag('img', array('src'=>new moodle_url('/mod/reader/img/progress/l.jpg'), 'border'=>0, 'alt'=>'l', 'height'=>16, 'width'=>28, 'style'=>'margin:0 4px 0 0'));
+        $lp1    = html_writer::empty_tag('img', array('src'=>new moodle_url('/mod/reader/img/progress/lp1.jpg'), 'border'=>0, 'alt'=>'lp1', 'height'=>16, 'width'=>28, 'style'=>'margin:0 4px 0 0'));
+        
+        $o .= html_writer::start_tag('div');
+        $o .= html_writer::tag('h3', get_string("quizzespassedtable", "reader", $leveldata['studentlevel']));
+        $o .= html_writer::end_tag('div');
+        
+        for ($i = $max; $i > 0; $i -= 1) {
+            if ($i > $lqnow && $i <= $lmax) { 
+                $o = $o . $yet;
+            } else if ($i > $lqnow ) {
+                $o = $o . $spacer;
+            } else {
+                $o = $o . $done;
+            }
+                    
+            if ($i > $qnow && $i <= $max) { 
+                $o = $o . $yet;
+            } else if ($i > $qnow ) {
+                $o = $o . $spacer;
+            } else {
+                $o = $o . $done;
+            }
+                    
+            if ($i > $hqnow && $i <= $hmax) { 
+                $o = $o . $yet . html_writer::empty_tag('br');
+            } else if ($i > $hqnow ) {
+                $o = $o . $spacer . html_writer::empty_tag('br');
+            } else {
+                $o = $o . $done . html_writer::empty_tag('br');
+            }
+        }
+            $o = $o . $lm1 . $lnow . $lp1 . html_writer::empty_tag('br');
+        
+        echo $o;
+        
+        echo html_writer::end_tag('div');
+    }
+    echo html_writer::tag('div', '', array('style'=>'clear:both;'));
     
     echo $OUTPUT->box_end();
     

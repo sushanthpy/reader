@@ -288,7 +288,7 @@ function reader_get_stlevel_data($reader) {
     if ($studentlevel->nopromote == 1) {
         $counter['countlevel'] = 1;
     }
-    
+
     //---------Check for next level------------//
     if ($counter['countlevel'] >= $reader->nextlevel) {
         $studentlevel->currentlevel += 1;

@@ -9,7 +9,7 @@
 
 
     // Get submitted parameters.
-    $id        = required_param('id', PARAM_INT); 
+    $id        = optional_param('id', 0, PARAM_INT); 
     $attemptid = required_param('attempt', PARAM_INT);
     $page      = optional_param('page', 0, PARAM_INT);
 
