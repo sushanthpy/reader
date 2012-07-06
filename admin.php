@@ -577,7 +577,7 @@
 /*
 * Mass Change Goal
 */
-    if (has_capability('mod/reader:manage', $contextmodule) && $changeallcurrentgoal) {
+    if (has_capability('mod/reader:manage', $contextmodule) && $act == "studentslevels" && !empty($grid) && isset($changeallcurrentgoal)) {
         $coursestudents = get_enrolled_users($context, NULL, $grid);
         foreach ($coursestudents as $coursestudent) {
             if ($data = $DB->get_record("reader_levels", array("userid"=>$coursestudent->id, "readerid"=>$reader->id))) {
