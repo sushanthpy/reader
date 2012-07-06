@@ -995,8 +995,8 @@
                          $menu['quizmanagement']["dlquizzesnoq.php?id={$id}"]                 = get_string("uploaddatanoquizzes", "reader");
         if (has_capability('mod/reader:manage', $contextmodule)) 
                          $menu['quizmanagement']["updatecheck.php?id={$id}&checker=1"]        = get_string("quizmanagement", "reader");
-        if (has_capability('mod/reader:setgoal', $contextmodule)) 
-                         $menu['quizmanagement']["?a=admin&id={$id}&act=setgoal"]             = get_string("setgoal", "reader");
+        //if (has_capability('mod/reader:setgoal', $contextmodule)) 
+        //                 $menu['quizmanagement']["?a=admin&id={$id}&act=setgoal"]             = get_string("setgoal", "reader");
         if (has_capability('mod/reader:forcedtimedelay', $contextmodule)) 
                          $menu['quizmanagement']["?a=admin&id={$id}&act=forcedtimedelay"]     = get_string("forcedtimedelay", "reader");
         if (has_capability('mod/reader:deletequizzes', $contextmodule)) 
