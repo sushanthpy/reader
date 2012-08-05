@@ -347,7 +347,7 @@
         <INDEX NAME="readerid_key" UNIQUE="false" FIELDS="readerid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="reader_cheated_log" COMMENT="reader_individual_books table with individual books list" PREVIOUS="reader_individual_books">
+    <TABLE NAME="reader_cheated_log" COMMENT="reader_individual_books table with individual books list" PREVIOUS="reader_individual_books" NEXT="backup_ids">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="false" UNSIGNED="true" SEQUENCE="true" NEXT="byuserid"/>
         <FIELD NAME="byuserid" TYPE="int" LENGTH="11" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="userid1"/>
@@ -366,6 +366,24 @@
       </KEYS>
       <INDEXES>
         <INDEX NAME="byuserid_key" UNIQUE="false" FIELDS="byuserid"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="backup_ids" COMMENT="backup_ids" PREVIOUS="reader_cheated_log">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="false" UNSIGNED="true" SEQUENCE="true" NEXT="backup_code"/>
+        <FIELD NAME="backup_code" TYPE="int" LENGTH="11" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="table_name"/>
+        <FIELD NAME="table_name" TYPE="char" LENGTH="255" NOTNULL="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="backup_code" NEXT="old_id"/>
+        <FIELD NAME="old_id" TYPE="int" LENGTH="11" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="table_name" NEXT="new_id"/>
+        <FIELD NAME="new_id" TYPE="int" LENGTH="11" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="old_id" NEXT="info"/>
+        <FIELD NAME="info" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="new_id"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="backup_code" UNIQUE="false" FIELDS="backup_code" NEXT="old_id"/>
+        <INDEX NAME="old_id" UNIQUE="false" FIELDS="old_id" PREVIOUS="backup_code"/>
       </INDEXES>
     </TABLE>
   </TABLES>

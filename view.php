@@ -505,7 +505,7 @@
     
     foreach ($publisherform as $key => $value) {
         $needtousepublisher = false;
-        if ($allowdifficultysql) {
+        if ($allowdifficultysql != "") {
             if ($reader->individualbooks == 1) {
                 $books = $DB->get_records_sql("SELECT * FROM {reader_publisher} rp INNER JOIN {reader_individual_books} ib ON ib.bookid = rp.id WHERE ib.readerid = ? and rp.publisher= ? and rp.hidden='0' and rp.private IN(0, ? ) and ib.difficulty IN( ".$allowdifficultysql." ) ORDER BY rp.name", array($reader->id, $value, $reader->id));
             } else {

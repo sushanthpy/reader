@@ -77,7 +77,7 @@
             $publisher = $pubdata_[0];
         }
         
-        if ($allowdifficultysql) {
+        if ($allowdifficultysql != "") {
             if ($reader->individualbooks == 1) {
                 $books = $DB->get_records_sql("SELECT * FROM {reader_publisher} rp INNER JOIN {reader_individual_books} ib ON ib.bookid = rp.id WHERE ib.readerid =  ? and rp.publisher= ? and rp.hidden='0' and rp.private IN(0, ?) and ib.difficulty IN( ".$allowdifficultysql." ) ORDER BY rp.name", array($reader->id, $publisher, $reader->id));
             } else {
@@ -118,7 +118,7 @@
             }
         }
     }
-
+    
     if ($publisher != "Select Publisher") {
         if (count($booksform) > 0) {
             echo html_writer::start_tag('select', array('size'=>10, 'name'=>'book', 'id'=>'id_book', 'style'=>'width: 500px;', 'multiple'=>'multiple'));
