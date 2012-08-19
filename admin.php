@@ -664,6 +664,8 @@
         $userid1 = $DB->get_record("reader_attempts", array("id"=>$cheated1));
         $userid2 = $DB->get_record("reader_attempts", array("id"=>$cheated2));
         
+        $book = $DB->get_record("reader_publisher", array("id"=>$userid1->quizid));
+        
         $data            = new stdClass;
         $data->byuserid  = $USER->id;
         $data->userid1   = $userid1->userid;
@@ -681,8 +683,8 @@
         if ($reader->sendmessagesaboutcheating == 1) {
             $user1 = $DB->get_record("user", array("id"=>$userid1->userid));
             $user2 = $DB->get_record("user", array("id"=>$userid2->userid));
-            email_to_user($user1,get_admin(),"Cheated notice",$reader->cheated_message);
-            email_to_user($user2,get_admin(),"Cheated notice",$reader->cheated_message);
+            email_to_user($user1,get_admin(),"Notice about cheating: ".$book->name,$reader->cheated_message);
+            email_to_user($user2,get_admin(),"Notice about cheating: ".$book->name,$reader->cheated_message);
         }
     }
 
