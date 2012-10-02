@@ -325,26 +325,28 @@
 */
 
     if (has_capability('mod/reader:manage', $contextmodule) && $f == "changereaderlevel_massdifficulty") {
-        if (!empty($level)) {
-            $DB->set_field("reader_publisher", 'difficulty', urldecode($massdifficultyto), array( "difficulty" => urldecode($massdifficultyfrom), "publisher" => urldecode($publisher), "level" => urldecode($level)));
+        if ($reader->individualbooks == 0) {
+            if (!empty($level)) {
+                $DB->set_field("reader_publisher", 'difficulty', urldecode($massdifficultyto), array( "difficulty" => urldecode($massdifficultyfrom), "publisher" => urldecode($publisher), "level" => urldecode($level)));
+            } else {
+                $DB->set_field("reader_publisher", 'difficulty', urldecode($massdifficultyto), array( "difficulty" => urldecode($massdifficultyfrom), "publisher" => urldecode($publisher)));
+            }
         } else {
-            $DB->set_field("reader_publisher", 'difficulty', urldecode($massdifficultyto), array( "difficulty" => urldecode($massdifficultyfrom), "publisher" => urldecode($publisher)));
-        }
-        
-        if (!empty($level)) {
-            $data = $DB->get_records("reader_publisher", array("publisher" => urldecode($publisher), "level" => urldecode($level)));
-        } else {
-            $data = $DB->get_records("reader_publisher", array("publisher" => urldecode($publisher)));
-        }
-        
-        $difficultystring = "";
-        
-        foreach ($data as $key => $value) {
-            $difficultystring .= $value->id.",";
-        }
-        $difficultystring = substr($difficultystring, 0, -1);
+            if (!empty($level)) {
+                $data = $DB->get_records("reader_publisher", array("publisher" => urldecode($publisher), "level" => urldecode($level)));
+            } else {
+                $data = $DB->get_records("reader_publisher", array("publisher" => urldecode($publisher)));
+            }
             
-        $DB->execute("UPDATE {reader_individual_books} SET difficulty = ? WHERE difficulty = ? and readerid = ? and bookid IN (?)", array(urldecode($massdifficultyto), urldecode($massdifficultyfrom), $reader->id, $difficultystring)); 
+            $difficultystring = "";
+            
+            foreach ($data as $key => $value) {
+                $difficultystring .= $value->id.",";
+            }
+            $difficultystring = substr($difficultystring, 0, -1);
+                
+            $DB->execute("UPDATE {reader_individual_books} SET difficulty = ? WHERE difficulty = ? and readerid = ? and bookid IN (?)", array(urldecode($massdifficultyto), urldecode($massdifficultyfrom), $reader->id, $difficultystring)); 
+        }
         
         add_to_log($course->id, "reader", substr("AA-Mass changes difficulty (".urldecode($massdifficultyfrom)." to ".urldecode($massdifficultyto).")", 0, 39), "admin.php?id=$id", "$cm->instance");
         

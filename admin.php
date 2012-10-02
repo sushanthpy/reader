@@ -521,6 +521,7 @@
 /*
 * Mass Change Levels
 */
+/*
     if (has_capability('mod/reader:manage', $contextmodule) &&  $changeallcurrentlevel >= 0) {
         $coursestudents = get_enrolled_users($context, NULL, $grid);
         foreach ($coursestudents as $coursestudent) {
@@ -539,7 +540,7 @@
             add_to_log($course->id, "reader", substr("AA-changeallcurrentlevel userid: {$coursestudent->id}, currentlevel={$changeallcurrentlevel}",0,39), "admin.php?id=$id", "$cm->instance");
         }
     }
-
+*/
 
 /*
 * Mass Change Promo
@@ -3703,7 +3704,7 @@
         
         $quizzes = array();
         
-        $data = $DB->get_records_sql ("SELECT * FROM {reader_publisher} where hidden=? order by publisher, name", array(0));
+        $data = $DB->get_records_sql ("SELECT * FROM {reader_publisher} where hidden=? order by publisher, level, name", array(0));
         foreach ($data as $data_) {
             $quizzes[$data_->publisher][$data_->level][$data_->id] = $data_->name;
         }
