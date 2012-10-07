@@ -471,7 +471,7 @@
                     $add->fiction          = $quizzestoadd_['fiction'];
                     $add->difficulty       = $quizzestoadd_['difficulty'];
                     $add->words            = $quizzestoadd_['words'];
-                    $add->quizid           = $quizzestoadd_['quizid'];
+                    $add->quizid           = $quizbook[$quizzestoadd_['id']];
                     $add->length           = $quizzestoadd_['length'];
                     $add->time             = time();
                     $add->id               = $data->id;
