@@ -982,9 +982,9 @@ function reader_fullname_link_viewasstudent($userdata, $link) {
     if (!isset($userdata->userid)) 
         $userdata->userid = $userdata->id;
         
-    $linkurl = new moodle_url("/mod/reader/admin.php", array('id'=>$id, 'act'=>$act, 'viewasstudent'=>$userdata->id));
+    $linkurl = new moodle_url("/mod/reader/admin.php?".$link, array('id'=>$id, 'act'=>$act, 'viewasstudent'=>$userdata->id));
 
-    return array(html_writer::link($linkurl.'&'.$link, $userdata->firstname.' '.$userdata->lastname), $userdata->firstname.' '.$userdata->lastname);
+    return array(html_writer::link($linkurl, $userdata->firstname.' '.$userdata->lastname), $userdata->firstname.' '.$userdata->lastname);
 }
 
 

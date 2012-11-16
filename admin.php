@@ -424,6 +424,7 @@
     }
 
 
+
 /*
 * View as student
 */
@@ -449,6 +450,9 @@
         }
       /// Login as this user and return to course home page.
 
+      if (function_exists('session_loginas')) {
+        session_loginas($viewasstudent, $context);
+      } else {
         $oldfullname = fullname($USER, true);
         $olduserid   = $USER->id;
 
@@ -465,9 +469,9 @@
         }
 
         $newfullname = fullname($USER, true);
-
-        add_to_log($course->id, "course", "loginas", "../user/view.php?id=$course->id&amp;user=$userid", "$oldfullname -> $newfullname");
-        header("Location: view.php?a=quizes&id=".$id);
+      }
+      add_to_log($course->id, "course", "loginas", "../user/view.php?id=$course->id&amp;user=$userid", "$oldfullname -> $newfullname");
+      header("Location: view.php?a=quizes&id=".$id);
     }
 
 
@@ -1630,11 +1634,10 @@
             
             //----------------Count quizzes------------//
             if (list($attemptdata, $summaryattemptdata) = reader_get_student_attempts($coursestudent->id, $reader)) {
-                unset($totalwords);
+                $totalwords = 0;
                 foreach ($attemptdata as $attemptdata_) {
                     if (($attemptdata_['timefinish']>=$reader->ignordate && $ct == 1) || empty($ct)) {
                         if ($reader->wordsorpoints == "words") {
-                            $totalwords = 0;
                             if (reader_check_search_text($searchtext, $coursestudent, $attemptdata_)) {
                                 $showwords = 0;
                                 switch (strtolower($attemptdata_['passed'])) { 
@@ -3506,17 +3509,19 @@
     } else if ($act == "forcedtimedelay" && has_capability('mod/reader:forcedtimedelay', $contextmodule)) {
         class reader_forcedtimedelay_form extends moodleform {
             function definition() {
-                global $COURSE, $CFG, $reader, $course,$DB;
+                global $COURSE, $CFG, $reader, $course,$DB, $id, $separategroups;
                 
-                if ($default = $DB->get_record("reader_forcedtimedelay", array( "readerid"=>$reader->id,  'level'=>99))) {
+                if (empty($separategroups)) $separategroups = 0;
+                
+                if ($default = $DB->get_record("reader_forcedtimedelay", array( "readerid"=>$reader->id,  'level'=>99, 'groupid'=>$separategroups))) {
                     if ($default->delay) {
-                        $defdelaytime = round($default->delay / 3600);
+                        $defdelaytime = $default->delay;
                     }
                 } else {
                     $defdelaytime = $reader->attemptsofday * 24;
                 }
                 
-                $dtimes = array(0=>'Default ('.$defdelaytime.')', 1=>'Without delay', 14400=>4, 28800=>8, 43200=>12, 57600=>16, 86400=>24, 129600=>36, 172800=>48, 259200=>72, 345600=>96, 432000=>120);
+                $dtimes = array(0=>'Default', 1=>'Without delay', 14400=>4, 28800=>8, 43200=>12, 57600=>16, 86400=>24, 129600=>36, 172800=>48, 259200=>72, 345600=>96, 432000=>120);
                 
                 $mform    =& $this->_form;
                 $mform->addElement('header', 'forcedtimedelay', get_string("forcedtimedelay", "reader")." (hours)"); 
@@ -3533,7 +3538,11 @@
                 }
                 
                 /* SET default */
-                $data = $DB->get_records ("reader_forcedtimedelay", array("readerid"=>$reader->id));
+                
+                $mform->setDefault('levelc[99]', $defdelaytime);
+                $mform->setDefault('separategroups', $separategroups);
+                
+                $data = $DB->get_records ("reader_forcedtimedelay", array("readerid"=>$reader->id, "groupid"=>$separategroups));
                 foreach ($data as $data_) {
                     if ($data_->level == 99) 
                         $mform->setDefault('levelall', $data_->delay);
