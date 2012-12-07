@@ -212,6 +212,10 @@ function reader_cron () {
         }
     }
 
+///Delete problem quizzes
+
+    $DB->delete_records("reader_attempts", array("sumgrades"=>0, "bookrating"=>0, "readtime"=>NULL, "ip"=>NULL, "flow"=>NULL));
+
     return true;
 }
 
@@ -859,7 +863,7 @@ function reader_get_student_attempts($userid, $reader, $allreaders = false, $boo
                 $totable['correct']++;
             } else {
                 if($studentattempt->passed == "cheated") {
-                    $statustext = "<font color='red'>Cheated</font>";
+                    $statustext = "<font color='red'>".get_string('cheated','reader')."</font>";
                 } else {
                     $statustext = "Not Passed";
                 }
@@ -2025,5 +2029,69 @@ function reader_getfile($itemid){
         return $file;
     } else
         return false;
+}
+
+
+function reader_get_cache($prefix, $t = 3600){
+    global $CFG;
+    
+    $file = $CFG->dataroot.'/cache/reader/'.$prefix;
+    
+    if(is_file($file) && filemtime($file) > (time() - $t)) {
+      return file_get_contents($file);
+    } else 
+      return false;
+      
+}
+
+
+function reader_save_cache($prefix, $o){
+    global $CFG;
+    
+    $dir  = $CFG->dataroot.'/cache/reader';
+    
+    if (!is_dir($CFG->dataroot.'/cache')) 
+      mkdir($dir, 0777);
+    
+    if (!is_dir($dir)) 
+      mkdir($dir, 0777);
+    
+    $file = $dir.'/'.$prefix;
+    
+    file_put_contents($file, $o);
+    
+    return true;
+}
+
+
+function reader_get_cache_obj($prefix, $t = 3600){
+    global $CFG;
+    
+    $file = $CFG->dataroot.'/cache/reader/'.$prefix;
+    
+    if(is_file($file) && filemtime($file) > (time() - $t)) {
+      return unserialize(file_get_contents($file));
+    } else 
+      return false;
+      
+}
+
+
+function reader_save_cache_obj($prefix, $o){
+    global $CFG;
+    
+    $dir  = $CFG->dataroot.'/cache/reader';
+    
+    if (!is_dir($CFG->dataroot.'/cache')) 
+      mkdir($dir, 0777);
+    
+    if (!is_dir($dir)) 
+      mkdir($dir, 0777);
+    
+    $file = $dir.'/'.$prefix;
+    
+    file_put_contents($file, serialize($o));
+    
+    return true;
 }
 

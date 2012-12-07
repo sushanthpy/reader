@@ -347,7 +347,7 @@
         <INDEX NAME="readerid_key" UNIQUE="false" FIELDS="readerid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="reader_cheated_log" COMMENT="reader_individual_books table with individual books list" PREVIOUS="reader_individual_books" NEXT="backup_ids">
+    <TABLE NAME="reader_cheated_log" COMMENT="reader_individual_books table with individual books list" PREVIOUS="reader_individual_books" NEXT="reader_backup_ids">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="false" UNSIGNED="true" SEQUENCE="true" NEXT="byuserid"/>
         <FIELD NAME="byuserid" TYPE="int" LENGTH="11" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="userid1"/>
@@ -369,7 +369,7 @@
       </INDEXES>
     </TABLE>
 
-    <TABLE NAME="backup_ids" COMMENT="backup_ids" PREVIOUS="reader_cheated_log">
+    <TABLE NAME="reader_backup_ids" COMMENT="reader_backup_ids" PREVIOUS="reader_cheated_log">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="false" UNSIGNED="true" SEQUENCE="true" NEXT="backup_code"/>
         <FIELD NAME="backup_code" TYPE="int" LENGTH="11" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="table_name"/>

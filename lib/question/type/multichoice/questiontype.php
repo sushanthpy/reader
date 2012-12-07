@@ -63,7 +63,7 @@ class back_multichoice_qtype {
             /*
             $tok = strtok($multichoice->answers,",");
             while ($tok) {
-                //Get the answer from backup_ids
+                //Get the answer from reader_backup_ids
                 $answer = backup_getid($restore->backup_unique_code,"question_answers",$tok);
                 if ($answer) {
                     if ($in_first) {
@@ -80,7 +80,7 @@ class back_multichoice_qtype {
             $tok = explode(",", $multichoice->answers);
             while (list($key,$value) = each($tok)) {
               if (!empty($value)) {
-                //Get the answer from backup_ids
+                //Get the answer from reader_backup_ids
                 $answer = backup_getid($restore->backup_unique_code,"question",$value);
                 if ($answer) {
                     if ($in_first) {

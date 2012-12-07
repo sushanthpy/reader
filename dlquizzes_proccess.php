@@ -372,21 +372,21 @@
                 $module = $DB->get_record('modules', array('name' => 'quiz'));
                 $newid  = $DB->get_record('course_modules', array('course' => $courseid, 'module' => $module->id, 'instance' => $quizbook[$quizzestoadd_['id']]));
                 
-                $backup_ids              = new stdClass;
-                $backup_ids->backup_code = $restoreq->backup_unique_code;
-                $backup_ids->table_name  = 'course_modules';
-                $backup_ids->old_id      = $oldquizid;
-                $backup_ids->new_id      = $newid->id;
-                $backup_ids->info        = 's:0:"";';
+                $reader_backup_ids              = new stdClass;
+                $reader_backup_ids->backup_code = $restoreq->backup_unique_code;
+                $reader_backup_ids->table_name  = 'course_modules';
+                $reader_backup_ids->old_id      = $oldquizid;
+                $reader_backup_ids->new_id      = $newid->id;
+                $reader_backup_ids->info        = 's:0:"";';
                 
-                $DB->insert_record('backup_ids', $backup_ids);
+                $DB->insert_record('reader_backup_ids', $reader_backup_ids);
                 
                 $restoreq->mods['quiz']->restore  = 1;
                 $restoreq->mods['quiz']->userinfo = 0;
                 $restoreq->mods['quiz']->granular = 1;
-                $restoreq->mods['quiz']->instances[$backup_ids->old_id]->restore  = 1;
-                $restoreq->mods['quiz']->instances[$backup_ids->old_id]->userinfo = 0;
-                $restoreq->mods['quiz']->instances[$backup_ids->old_id]->restored_as_course_module = $backup_ids->new_id;
+                $restoreq->mods['quiz']->instances[$reader_backup_ids->old_id]->restore  = 1;
+                $restoreq->mods['quiz']->instances[$reader_backup_ids->old_id]->userinfo = 0;
+                $restoreq->mods['quiz']->instances[$reader_backup_ids->old_id]->restored_as_course_module = $reader_backup_ids->new_id;
 
                 $restoreq->course_startdateoffset = -1900800;
                 $restoreq->restore_restorecatto   = 3;

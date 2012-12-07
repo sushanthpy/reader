@@ -233,6 +233,8 @@ $string['wordscount'] = 'Word count';
 $string['withoutdayfilter'] = 'Without day filter';
 $string['quizzesmustbeinstalled'] = 'Quizzes must be installed in a course that is separate from the course that the students will log into when they take quizzes. This course is hidden from the students and is only used as a storage area for the quizzes, and is normally called "All Quizzes." The course that you have established for this purpose should be shown below.  If you haven\'t yet established a course, please click on "Create new course."';
 
+$string['cheated'] = 'Pending approval';
+
 $string['done'] = 'Done';
 $string['noquizzesfound'] = 'No quizzes found!';
 $string['yes'] = 'Yes';
