@@ -950,6 +950,30 @@ function reader_print_group_select_box($courseid, $link) {
 }
 
 
+function reader_print_group_select_box_sub($courseid) {
+    global $CFG, $COURSE, $grid;
+        
+    $o  = "";
+        
+    if ($groups = groups_get_all_groups ($courseid)) {
+        $o .= html_writer::start_tag('div', array('class'=>'fr'));
+        $o .= html_writer::start_tag('select', array('name'=>'grid'));
+        $o .= html_writer::tag('option', get_string('allgroups', 'reader'), array('value'=>-1));
+        foreach ($groups as $groupkey => $groupvalue) {
+            if ($groupkey == $grid)
+                $o .= html_writer::tag('option', $groupvalue->name, array('value'=>$groupkey, 'selected'=>'selected'));
+            else
+                $o .= html_writer::tag('option', $groupvalue->name, array('value'=>$groupkey));
+        }
+        $o .= html_writer::end_tag('select');
+        $o .= html_writer::end_tag('div');
+        //$o .= html_writer::tag('div', '', array('class'=>'clear'));
+    }
+    
+    echo $o;
+}
+
+
 function reader_get_pages($table, $page, $perpage) {
     global $CFG, $COURSE;
     
@@ -1006,7 +1030,7 @@ function reader_fullname_link_t($userdata) {
 function reader_select_perpage($id, $act, $sort, $orderby, $grid) {
     global $CFG, $COURSE, $_SESSION, $book;
     
-    $pages = array(30, 60, 100, 200, 500);
+    $pages = array(50, 100, 200, 500);
     
     if (!empty($book))
         $link = new moodle_url('/mod/reader/admin.php', array('a'=>'admin', 'id'=>$id, 'act'=>$act, 'sort'=>$sort, 'orderby'=>$orderby, 'book'=>$book, 'grid'=>$grid));
@@ -1029,6 +1053,32 @@ function reader_select_perpage($id, $act, $sort, $orderby, $grid) {
     
     $o .= html_writer::end_tag('select');
     $o .= html_writer::end_tag('form');
+    $o .= html_writer::end_tag('div');
+    $o .= html_writer::tag('div', '', array('class'=>'clear'));
+
+    echo $o;
+}
+
+
+function reader_select_perpage_sub($id, $act, $sort, $orderby, $grid) {
+    global $CFG, $COURSE, $_SESSION;
+    
+    $pages = array(50, 100, 200, 500);
+    
+    $o  = '';
+    $o .= html_writer::start_tag('div', array('class'=>'fr'));
+    $o .= 'Perpage ';
+    $o .= html_writer::start_tag('select', array('name'=>'perpage'));
+    
+    foreach ($pages as $page) {
+        if ($_SESSION['SESSION']->reader_perpage == $page)
+            $o .= html_writer::tag('option', $page, array('value'=>$page, 'selected'=>'selected'));
+        else
+            $o .= html_writer::tag('option', $page, array('value'=>$page));
+    }
+    
+    $o .= html_writer::end_tag('select');
+    
     $o .= html_writer::end_tag('div');
     $o .= html_writer::tag('div', '', array('class'=>'clear'));
 
@@ -1070,6 +1120,34 @@ function reader_print_search_form ($id, $act) {
 }
 
 
+function reader_print_search_form_sub ($id, $act) {
+    global $CFG, $COURSE, $_SESSION, $searchtext, $book, $OUTPUT;
+    
+    $searchtext = str_replace('\"', '"', $searchtext);
+    
+    $o  = '';
+    $o .= html_writer::start_tag('table', array('style'=>'width:100%'));
+    $o .= html_writer::start_tag('tr');
+    $o .= html_writer::start_tag('td', array('align'=>'right'));
+    $o .= html_writer::start_tag('div', array('class'=>'fr'));
+    $o .= get_string('search', 'reader');
+    $o .= html_writer::end_tag('div');
+    $o .= html_writer::empty_tag('input', array('type'=>'text', 'name'=>'searchtext', 'value'=>$searchtext, 'style'=>'width:120px;'));
+
+    $options            = array();
+    $options["act"]     = $act;
+    $options["id"]      = $id;
+    if (!empty($searchtext)) {
+        $o .= $OUTPUT->render(new single_button(new moodle_url('/mod/reader/admin.php', $options), get_string("showall", "reader"))); 
+    }
+    $o .= html_writer::end_tag('td');
+    $o .= html_writer::end_tag('tr');
+    $o .= html_writer::end_tag('table');
+    
+    echo $o;
+}
+
+
 function reader_select_term(){
     global $id, $act, $sort, $grid, $orderby, $ct;
     
@@ -1089,6 +1167,28 @@ function reader_select_term(){
         
     $o .= html_writer::end_tag('select');
     $o .= html_writer::end_tag('form');
+    $o .= html_writer::end_tag('div');
+        
+    echo $o;
+}
+
+
+function reader_select_term_sub(){
+    global $id, $act, $sort, $grid, $orderby, $ct;
+    
+    $link   = new moodle_url("/mod/reader/admin.php", array("id" => $id, "act" => $act, "a" => "admin", "sort" => $sort, "grid" => $grid, "orderby" => $orderby));
+        
+    $o  = "";
+    $o .= html_writer::start_tag('div', array('class'=>'fr'));
+    $o .= html_writer::start_tag('select', array('name'=>'ct'));
+    $o .= html_writer::tag('option', 'All terms', array('value'=>-1));
+    
+    if (!empty($ct))
+        $o .= html_writer::tag('option', 'Current term', array('value'=>1, 'selected'=>'selected'));
+    else
+        $o .= html_writer::tag('option', 'Current term', array('value'=>1));
+        
+    $o .= html_writer::end_tag('select');
     $o .= html_writer::end_tag('div');
         
     echo $o;

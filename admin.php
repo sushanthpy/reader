@@ -165,8 +165,8 @@
         }
     }
     
-    if ($perpage < 30)
-        $perpage = 30;
+    if ($perpage < 50)
+        $perpage = 50;
     
     $_SESSION['SESSION']->reader_perpage = $perpage;
     
@@ -1391,142 +1391,164 @@
             $grid = NULL;
         }
         
+        $cachename = md5('admin-reports-'.$reader->id."-".$grid."-".$ct."-".$searchtext);
         
-        if (!$table->data = reader_get_cache_obj('admin-reports-'.$reader->id."-".$grid."-".$ct)) {
+        if (!empty($_GET['sort']) || $excel) {
+            if (!$table->data = reader_get_cache_obj($cachename)) {
 
-            $coursestudents = get_enrolled_users($context, NULL, $grid);
-            $groupsdata     = array();
+                $coursestudents = get_enrolled_users($context, NULL, $grid);
+                $groupsdata     = array();
 
-            foreach ($coursestudents as $coursestudent) {
-                if (reader_check_search_text($searchtext, $coursestudent)) {
-                    $picture = $OUTPUT->user_picture($coursestudent,array($course->id, true, 0, true));
-                    
-                    if ($excel) {
-                        //---------------------Groups for Excel------------//
-                        if ($usergroups = groups_get_all_groups($course->id, $coursestudent->id)){
-                            foreach ($usergroups as $group){
-                                $groupsdata[$coursestudent->username] .= $group->name.', ';
-                            }
-                            $groupsdata[$coursestudent->username] = substr($groupsdata[$coursestudent->username], 0, -2);
-                        }
-                        //---------------------------------------------------//
-                    }
-                    
-                    
-                    $data = array('totalwordsthisterm'=>0, 'totalwordsallterms'=>0);
-                    
-                    if ($attempts = $DB->get_records_sql("SELECT * FROM {reader_attempts} WHERE userid= ?  and reader= ?  and timefinish > ?", array($coursestudent->id, $reader->id, $reader->ignordate))) {
-                        foreach ($attempts as $attempt) {
-                            if (strtolower($attempt->passed) == "true") {
-                                if ($attempt->preview == 0) {
-                                    $bookdata = $DB->get_record("reader_publisher", array("id"=>$attempt->quizid));
-                                } else {
-                                    $bookdata = $DB->get_record("reader_noquiz", array("id"=>$attempt->quizid));
+                foreach ($coursestudents as $coursestudent) {
+                    if (reader_check_search_text($searchtext, $coursestudent)) {
+                        $picture = $OUTPUT->user_picture($coursestudent,array($course->id, true, 0, true));
+                        
+                        if ($excel) {
+                            //---------------------Groups for Excel------------//
+                            if ($usergroups = groups_get_all_groups($course->id, $coursestudent->id)){
+                                foreach ($usergroups as $group){
+                                    $groupsdata[$coursestudent->username] .= $group->name.', ';
                                 }
-                                if (!isset($data['totalwordsthisterm'])) $data['totalwordsthisterm'] = 0;
-                                $data['totalwordsthisterm'] += $bookdata->words;
+                                $groupsdata[$coursestudent->username] = substr($groupsdata[$coursestudent->username], 0, -2);
                             }
-                        }
-                    }
-                    
-                    if ($attempts = $DB->get_records_sql("SELECT * FROM {reader_attempts} WHERE userid= ? ", array($coursestudent->id))) {
-                        foreach ($attempts as $attempt) {
-                            if (strtolower($attempt->passed) == "true") {
-                                if ($attempt->preview == 0) {
-                                    $bookdata = $DB->get_record("reader_publisher", array("id"=>$attempt->quizid));
-                                } else {
-                                    $bookdata = $DB->get_record("reader_noquiz", array("id"=>$attempt->quizid));
-                                }
-                                if (!isset($data['totalwordsallterms'])) $data['totalwordsallterms'] = 0;
-                                $data['totalwordsallterms'] += $bookdata->words;
-                            }
-                        }
-                    }
-                    
-                    if ($attemptdata = reader_get_student_attempts($coursestudent->id, $reader)) {
-                        if (has_capability('mod/reader:viewstudentreaderscreens', $contextmodule)) {
-                            $link = reader_fullname_link_viewasstudent($coursestudent, "grid={$grid}&searchtext={$searchtext}&page={$page}&sort={$sort}&orderby={$orderby}");
-                        } else {
-                            $link = reader_fullname_link_t($coursestudent);
+                            //---------------------------------------------------//
                         }
                         
-                        $table->data[] = array ($picture,
-                                                reader_user_link_t($coursestudent),
-                                                $link,
-                                                $attemptdata[1]['startlevel'],
-                                                $attemptdata[1]['currentlevel'],
-                                                $attemptdata[1]['countattempts'],
-                                                $attemptdata[1]['correct'], 
-                                                $attemptdata[1]['incorrect'], 
-                                                $attemptdata[1]['totalpoints'],
-                                                $data['totalwordsthisterm'],
-                                                $data['totalwordsallterms']
-                                                );
-                    } else {
-                        if (has_capability('mod/reader:viewstudentreaderscreens', $contextmodule)) {
-                            $link = reader_fullname_link_viewasstudent($coursestudent);
-                        } else {
-                            $link = reader_fullname_link_t($coursestudent);
+                        
+                        $data = array('totalwordsthisterm'=>0, 'totalwordsallterms'=>0);
+                        
+                        if ($attempts = $DB->get_records_sql("SELECT * FROM {reader_attempts} WHERE userid= ?  and reader= ?  and timefinish > ?", array($coursestudent->id, $reader->id, $reader->ignordate))) {
+                            foreach ($attempts as $attempt) {
+                                if (strtolower($attempt->passed) == "true") {
+                                    if ($attempt->preview == 0) {
+                                        $bookdata = $DB->get_record("reader_publisher", array("id"=>$attempt->quizid));
+                                    } else {
+                                        $bookdata = $DB->get_record("reader_noquiz", array("id"=>$attempt->quizid));
+                                    }
+                                    if (!isset($data['totalwordsthisterm'])) $data['totalwordsthisterm'] = 0;
+                                    $data['totalwordsthisterm'] += $bookdata->words;
+                                }
+                            }
                         }
                         
-                        $table->data[] = array ($picture,
-                                                reader_user_link_t($coursestudent),
-                                                $link,
-                                                $attemptdata[1]['startlevel'],
-                                                $attemptdata[1]['currentlevel'],
-                                                0,0,0,0,0,0);
+                        if ($attempts = $DB->get_records_sql("SELECT * FROM {reader_attempts} WHERE userid= ? ", array($coursestudent->id))) {
+                            foreach ($attempts as $attempt) {
+                                if (strtolower($attempt->passed) == "true") {
+                                    if ($attempt->preview == 0) {
+                                        $bookdata = $DB->get_record("reader_publisher", array("id"=>$attempt->quizid));
+                                    } else {
+                                        $bookdata = $DB->get_record("reader_noquiz", array("id"=>$attempt->quizid));
+                                    }
+                                    if (!isset($data['totalwordsallterms'])) $data['totalwordsallterms'] = 0;
+                                    $data['totalwordsallterms'] += $bookdata->words;
+                                }
+                            }
+                        }
+                        
+                        if ($attemptdata = reader_get_student_attempts($coursestudent->id, $reader)) {
+                            if (has_capability('mod/reader:viewstudentreaderscreens', $contextmodule)) {
+                                $link = reader_fullname_link_viewasstudent($coursestudent, "grid={$grid}&searchtext={$searchtext}&page={$page}&sort={$sort}&orderby={$orderby}");
+                            } else {
+                                $link = reader_fullname_link_t($coursestudent);
+                            }
+                            
+                            $table->data[] = array ($picture,
+                                                    reader_user_link_t($coursestudent),
+                                                    $link,
+                                                    $attemptdata[1]['startlevel'],
+                                                    $attemptdata[1]['currentlevel'],
+                                                    $attemptdata[1]['countattempts'],
+                                                    $attemptdata[1]['correct'], 
+                                                    $attemptdata[1]['incorrect'], 
+                                                    $attemptdata[1]['totalpoints'],
+                                                    $data['totalwordsthisterm'],
+                                                    $data['totalwordsallterms']
+                                                    );
+                        } else {
+                            if (has_capability('mod/reader:viewstudentreaderscreens', $contextmodule)) {
+                                $link = reader_fullname_link_viewasstudent($coursestudent);
+                            } else {
+                                $link = reader_fullname_link_t($coursestudent);
+                            }
+                            
+                            $table->data[] = array ($picture,
+                                                    reader_user_link_t($coursestudent),
+                                                    $link,
+                                                    $attemptdata[1]['startlevel'],
+                                                    $attemptdata[1]['currentlevel'],
+                                                    0,0,0,0,0,0);
+                        }
                     }
                 }
+            
+                reader_save_cache_obj($cachename, $table->data);
             }
-        
-            reader_save_cache_obj('admin-reports-'.$reader->id."-".$grid."-".$ct, $table->data);
-        }
-        
-        $table->data = reader_sort_table_data ($table->data, $titlesarray, $orderby, $sort);
+            
+            $table->data = reader_sort_table_data ($table->data, $titlesarray, $orderby, $sort);
 
-        if ($excel) {
-            foreach ($table->data as $tabledataarray) {
-                $myxls->write_string($row, 0, strip_tags($tabledataarray[1]));
-                $myxls->write_string($row, 1, strip_tags($tabledataarray[2]));
-                
-                if (isset($groupsdata[strip_tags($tabledataarray[1])]))
-                    $myxls->write_string($row, 2, (string) $groupsdata[strip_tags($tabledataarray[1])]);
-                
-                $myxls->write_number($row, 3, (int) $tabledataarray[3]);
-                $myxls->write_number($row, 4, (int) $tabledataarray[4]);
-                $myxls->write_number($row, 5, (int) $tabledataarray[5]);
-                $myxls->write_number($row, 6, (int) $tabledataarray[6]);
-                $myxls->write_number($row, 7, (int) $tabledataarray[7]);
-                $myxls->write_string($row, 8, $tabledataarray[8]);
-                $myxls->write_string($row, 9, (int) $tabledataarray[9]);
-                $myxls->write_string($row, 10, (int) $tabledataarray[10]);
-                $row++;
+            if ($excel) {
+                foreach ($table->data as $tabledataarray) {
+                    $myxls->write_string($row, 0, strip_tags($tabledataarray[1]));
+                    $myxls->write_string($row, 1, strip_tags($tabledataarray[2]));
+                    
+                    if (isset($groupsdata[strip_tags($tabledataarray[1])]))
+                        $myxls->write_string($row, 2, (string) $groupsdata[strip_tags($tabledataarray[1])]);
+                    
+                    $myxls->write_number($row, 3, (int) $tabledataarray[3]);
+                    $myxls->write_number($row, 4, (int) $tabledataarray[4]);
+                    $myxls->write_number($row, 5, (int) $tabledataarray[5]);
+                    $myxls->write_number($row, 6, (int) $tabledataarray[6]);
+                    $myxls->write_number($row, 7, (int) $tabledataarray[7]);
+                    $myxls->write_string($row, 8, $tabledataarray[8]);
+                    $myxls->write_string($row, 9, (int) $tabledataarray[9]);
+                    $myxls->write_string($row, 10, (int) $tabledataarray[10]);
+                    $row++;
+                }
             }
-        }
 
-        if ($excel) {
-            $workbook->close();
-            die();
+            if ($excel) {
+                $workbook->close();
+                die();
+            }
+            
+            reader_excel_download_btn();
+        
+        } //END is sort
+        
+        if (!empty($book))
+            $link = new moodle_url('/mod/reader/admin.php', array('a'=>'admin', 'id'=>$id, 'act'=>$act, 'sort'=>$sort, 'orderby'=>$orderby, 'book'=>$book, 'grid'=>$grid));
+        else
+            $link = new moodle_url('/mod/reader/admin.php', array('a'=>'admin', 'id'=>$id, 'act'=>$act, 'sort'=>$sort, 'orderby'=>$orderby, 'grid'=>$grid));
+        
+        echo html_writer::start_tag('form', array('action'=>$link, 'method'=>'post', 'id'=>'id_reader_reports_form', 'class'=>'popupform'));
+        
+        reader_print_search_form_sub ($id, $act);
+        
+        reader_print_group_select_box_sub($course->id);
+        
+        reader_select_perpage_sub($id, $act, $sort, $orderby, $grid);
+        
+        echo html_writer::start_tag('div', array('class'=>'fr'));
+        echo html_writer::empty_tag('input', array('type'=>'submit', 'name'=>'submit', 'value'=>get_string('go', 'reader'), 'style'=>'margin-right: 10px;'));
+        echo html_writer::end_tag('div');
+        echo html_writer::tag('div', '', array('class'=>'clear'));
+        
+        echo html_writer::end_tag('form');
+        
+        echo html_writer::tag('div', '', array('class'=>'clear'));
+        
+        
+        if (!empty($_GET['sort']) || $excel) {
+            list($totalcount, $table->data, $startrec, $finishrec, $options["page"]) = reader_get_pages($table->data, $page, $perpage);
+            
+            echo $OUTPUT->render(new paging_bar($totalcount, $page, $perpage, $alinkpadding)); 
+            
+            if ($table) {
+                echo html_writer::table($table);
+            }
+            
+            echo $OUTPUT->render(new paging_bar($totalcount, $page, $perpage, $alinkpadding)); 
         }
-        
-        reader_excel_download_btn();
-        
-        reader_print_search_form ($id, $act);
-        
-        reader_print_group_select_box($course->id, new moodle_url('/mod/reader/admin.php', array('a'=>'admin', 'id'=>$id, 'act'=>$act, 'sort'=>$sort, 'orderby'=>$orderby)));
-        
-        reader_select_perpage($id, $act, $sort, $orderby, $grid);
-        
-        list($totalcount, $table->data, $startrec, $finishrec, $options["page"]) = reader_get_pages($table->data, $page, $perpage);
-        
-        echo $OUTPUT->render(new paging_bar($totalcount, $page, $perpage, $alinkpadding)); 
-        
-        if ($table) {
-            echo html_writer::table($table);
-        }
-        
-        echo $OUTPUT->render(new paging_bar($totalcount, $page, $perpage, $alinkpadding)); 
-        
         
 /*
 * View Full Student Reports
@@ -1615,205 +1637,209 @@
             $grid = NULL;
         }
         
-        if (!$table->data = reader_get_cache_obj('admin-fullreports-'.$reader->id."-".$grid."-".$ct)) {
+        $cachename = md5('admin-fullreports-'.$reader->id."-".$grid."-".$ct."-".$searchtext);
         
-            if ($sort != 'username' && $sort != 'firstname') {
-                $coursestudents = get_enrolled_users($context, NULL, $grid);
-            } else {
-                $coursestudents = get_enrolled_users($context, NULL, $grid);
-            }
+        if (!empty($_GET['sort']) || $excel) {
+            if (!$table->data = reader_get_cache_obj($cachename)) {
             
-            $groupsdata = array();
-
-            foreach ($coursestudents as $coursestudent) {
-                $picture = $OUTPUT->user_picture($coursestudent,array($course->id, true, 0, true));
-                $totable['first'] = true;
-                
-                if ($excel) {
-                    //---------------------Groups for Excel------------//
-                    if ($usergroups = groups_get_all_groups($course->id, $coursestudent->id)){
-                        foreach ($usergroups as $group){
-                            $groupsdata[$coursestudent->username] .= $group->name.', ';
-                        }
-                        $groupsdata[$coursestudent->username] = substr($groupsdata[$coursestudent->username], 0, -2);
-                    }
-                    //---------------------------------------------------//
+                if ($sort != 'username' && $sort != 'firstname') {
+                    $coursestudents = get_enrolled_users($context, NULL, $grid);
+                } else {
+                    $coursestudents = get_enrolled_users($context, NULL, $grid);
                 }
                 
-                //----------------Count quizzes------------//
-                if (list($attemptdata, $summaryattemptdata) = reader_get_student_attempts($coursestudent->id, $reader)) {
-                    $totalwords = 0;
-                    foreach ($attemptdata as $attemptdata_) {
-                        if (($attemptdata_['timefinish']>=$reader->ignordate && $ct == 1) || empty($ct)) {
-                            if ($reader->wordsorpoints == "words") {
-                                if (reader_check_search_text($searchtext, $coursestudent, $attemptdata_)) {
-                                    $showwords = 0;
-                                    switch (strtolower($attemptdata_['passed'])) { 
-                                        case "true": 
-                                            $passedstatus = "P";
-                                            $totalwords +=  $attemptdata_['words'];
-                                            $showwords   =  $attemptdata_['words'];
-                                            break; 
-                                        case "false": 
-                                            $passedstatus = "F"; 
-                                            break; 
-                                        case "cheated": 
-                                            $passedstatus = "C";
-                                            break; 
-                                    }
+                $groupsdata = array();
 
-                                    if (!$excel && $sort == 'date') {
-                                        $attemptbooktime = array(date("d-M-Y", $attemptdata_['timefinish']), $attemptdata_['timefinish']);
-                                    } else if (!$excel) {
-                                        $attemptbooktime = date("d-M-Y", $attemptdata_['timefinish']);
-                                    } else {
-                                        $attemptbooktime = date("Y/m/d", $attemptdata_['timefinish']);
-                                    }
-                                    
-                                    if (($totable['first'] || $sort == 'slevel' || $sort == 'blevel' || $sort == 'title' || $sort == 'date') || $excel) {
-                                        list($linkusername, $username) = reader_user_link_t($coursestudent);
-                                        if ($excel) $linkusername = $username;
-                                        list($linkfullname, $username) = reader_fullname_link_t($coursestudent);
+                foreach ($coursestudents as $coursestudent) {
+                    $picture = $OUTPUT->user_picture($coursestudent,array($course->id, true, 0, true));
+                    $totable['first'] = true;
+                    
+                    if ($excel) {
+                        //---------------------Groups for Excel------------//
+                        if ($usergroups = groups_get_all_groups($course->id, $coursestudent->id)){
+                            foreach ($usergroups as $group){
+                                $groupsdata[$coursestudent->username] .= $group->name.', ';
+                            }
+                            $groupsdata[$coursestudent->username] = substr($groupsdata[$coursestudent->username], 0, -2);
+                        }
+                        //---------------------------------------------------//
+                    }
+                    
+                    //----------------Count quizzes------------//
+                    if (list($attemptdata, $summaryattemptdata) = reader_get_student_attempts($coursestudent->id, $reader)) {
+                        $totalwords = 0;
+                        foreach ($attemptdata as $attemptdata_) {
+                            if (($attemptdata_['timefinish']>=$reader->ignordate && $ct == 1) || empty($ct)) {
+                                if ($reader->wordsorpoints == "words") {
+                                    if (reader_check_search_text($searchtext, $coursestudent, $attemptdata_)) {
+                                        $showwords = 0;
+                                        switch (strtolower($attemptdata_['passed'])) { 
+                                            case "true": 
+                                                $passedstatus = "P";
+                                                $totalwords +=  $attemptdata_['words'];
+                                                $showwords   =  $attemptdata_['words'];
+                                                break; 
+                                            case "false": 
+                                                $passedstatus = "F"; 
+                                                break; 
+                                            case "cheated": 
+                                                $passedstatus = "C";
+                                                break; 
+                                        }
 
-                                        if (has_capability('mod/reader:viewstudentreaderscreens', $contextmodule)) {
-                                            list($linkfullname) = reader_fullname_link_viewasstudent($coursestudent, "grid={$grid}&searchtext={$searchtext}&page={$page}&sort={$sort}&orderby={$orderby}");
+                                        if (!$excel && $sort == 'date') {
+                                            $attemptbooktime = array(date("d-M-Y", $attemptdata_['timefinish']), $attemptdata_['timefinish']);
+                                        } else if (!$excel) {
+                                            $attemptbooktime = date("d-M-Y", $attemptdata_['timefinish']);
+                                        } else {
+                                            $attemptbooktime = date("Y/m/d", $attemptdata_['timefinish']);
                                         }
                                         
-                                        if ($reader->checkbox == 1) {
-                                            $table->data[] = array ($picture,
-                                                                $linkusername,
-                                                                $linkfullname,
-                                                                reader_ra_checkbox($attemptdata_),
-                                                                $attemptbooktime,
-                                                                $attemptdata_['userlevel'],
-                                                                $attemptdata_['bookdiff'],
-                                                                $attemptdata_['booktitle'],
-                                                                $attemptdata_['persent']."%",
-                                                                $passedstatus,
-                                                                $attemptdata_['words'], 
-                                                                $totalwords);
+                                        if (($totable['first'] || $sort == 'slevel' || $sort == 'blevel' || $sort == 'title' || $sort == 'date') || $excel) {
+                                            list($linkusername, $username) = reader_user_link_t($coursestudent);
+                                            if ($excel) $linkusername = $username;
+                                            list($linkfullname, $username) = reader_fullname_link_t($coursestudent);
 
+                                            if (has_capability('mod/reader:viewstudentreaderscreens', $contextmodule)) {
+                                                list($linkfullname) = reader_fullname_link_viewasstudent($coursestudent, "grid={$grid}&searchtext={$searchtext}&page={$page}&sort={$sort}&orderby={$orderby}");
+                                            }
+                                            
+                                            if ($reader->checkbox == 1) {
+                                                $table->data[] = array ($picture,
+                                                                    $linkusername,
+                                                                    $linkfullname,
+                                                                    reader_ra_checkbox($attemptdata_),
+                                                                    $attemptbooktime,
+                                                                    $attemptdata_['userlevel'],
+                                                                    $attemptdata_['bookdiff'],
+                                                                    $attemptdata_['booktitle'],
+                                                                    $attemptdata_['persent']."%",
+                                                                    $passedstatus,
+                                                                    $attemptdata_['words'], 
+                                                                    $totalwords);
+
+                                            } else {
+                                                $table->data[] = array ($picture,
+                                                                    $linkusername,
+                                                                    $linkfullname,
+                                                                    $attemptbooktime,
+                                                                    $attemptdata_['userlevel'],
+                                                                    $attemptdata_['bookdiff'],
+                                                                    $attemptdata_['booktitle'],
+                                                                    $attemptdata_['persent']."%",
+                                                                    $passedstatus,
+                                                                    $attemptdata_['words'], 
+                                                                    $totalwords);
+                                            }
+                                            $totable['first'] = false;
                                         } else {
-                                            $table->data[] = array ($picture,
-                                                                $linkusername,
-                                                                $linkfullname,
-                                                                $attemptbooktime,
-                                                                $attemptdata_['userlevel'],
-                                                                $attemptdata_['bookdiff'],
-                                                                $attemptdata_['booktitle'],
-                                                                $attemptdata_['persent']."%",
-                                                                $passedstatus,
-                                                                $attemptdata_['words'], 
-                                                                $totalwords);
-                                        }
-                                        $totable['first'] = false;
-                                    } else {
-                                        if ($reader->checkbox == 1) {
-                                            $table->data[] = array ('','','',
-                                                               reader_ra_checkbox($attemptdata_),
-                                                               $attemptbooktime,
-                                                               $attemptdata_['userlevel'],
-                                                               $attemptdata_['bookdiff'],
-                                                               $attemptdata_['booktitle'],
-                                                               $attemptdata_['persent']."%",
-                                                               $passedstatus,
-                                                               $attemptdata_['words'], 
-                                                               $totalwords);
-                                        } else {
-                                            $table->data[] = array ('','','',
-                                                               $attemptbooktime,
-                                                               $attemptdata_['userlevel'],
-                                                               $attemptdata_['bookdiff'],
-                                                               $attemptdata_['booktitle'],
-                                                               $attemptdata_['persent']."%",
-                                                               $passedstatus,
-                                                               //$attemptdata_['bookpoints'],
-                                                               $attemptdata_['words'], 
-                                                               $totalwords);
+                                            if ($reader->checkbox == 1) {
+                                                $table->data[] = array ('','','',
+                                                                   reader_ra_checkbox($attemptdata_),
+                                                                   $attemptbooktime,
+                                                                   $attemptdata_['userlevel'],
+                                                                   $attemptdata_['bookdiff'],
+                                                                   $attemptdata_['booktitle'],
+                                                                   $attemptdata_['persent']."%",
+                                                                   $passedstatus,
+                                                                   $attemptdata_['words'], 
+                                                                   $totalwords);
+                                            } else {
+                                                $table->data[] = array ('','','',
+                                                                   $attemptbooktime,
+                                                                   $attemptdata_['userlevel'],
+                                                                   $attemptdata_['bookdiff'],
+                                                                   $attemptdata_['booktitle'],
+                                                                   $attemptdata_['persent']."%",
+                                                                   $passedstatus,
+                                                                   //$attemptdata_['bookpoints'],
+                                                                   $attemptdata_['words'], 
+                                                                   $totalwords);
+                                            }
                                         }
                                     }
-                                }
-                            } else {
-                                if (reader_check_search_text($searchtext, $coursestudent, $attemptdata_)) {
-                                    switch (strtolower($attemptdata_['passed'])) { 
-                                        case "true": 
-                                            $passedstatus = "P";
-                                            break; 
-                                        case "false": 
-                                            $passedstatus = "F"; 
-                                            break; 
-                                        case "cheated": 
-                                            $passedstatus = "C";
-                                            break; 
-                                    } 
-                                    if (!$excel && $sort == 'date'){
-                                        $attemptbooktime = array(date("d-M-Y", $attemptdata_['timefinish']), $attemptdata_['timefinish']);
-                                    } else if (!$excel) {
-                                        $attemptbooktime = date("d-M-Y", $attemptdata_['timefinish']);
-                                    } else {
-                                        $attemptbooktime = date("Y/m/d", $attemptdata_['timefinish']);
-                                    }
-                                    
-                                    if (($totable['first'] || $sort == 'slevel' || $sort == 'blevel' || $sort == 'title' || $sort == 'date') || $excel) {
-                                        list($linkusername, $username) = reader_user_link_t($coursestudent);
-                                        if ($excel) $linkusername = $username;
-                                        list($linkfullname, $username) = reader_fullname_link_t($coursestudent);
-                                        if (has_capability('mod/reader:viewstudentreaderscreens', $contextmodule)) {
-                                            list($linkfullname) = reader_fullname_link_viewasstudent($coursestudent, "grid={$grid}&searchtext={$searchtext}&page={$page}&sort={$sort}&orderby={$orderby}");
-                                        }
-                                        if ($reader->checkbox == 1) {
-                                            $table->data[] = array ($picture,
-                                                                $linkusername,
-                                                                $linkfullname,
-                                                                reader_ra_checkbox($attemptdata_),
-                                                                $attemptbooktime,
-                                                                $attemptdata_['userlevel'],
-                                                                $attemptdata_['bookdiff'],
-                                                                $attemptdata_['booktitle'],
-                                                                $attemptdata_['persent']."%",
-                                                                $passedstatus,
-                                                                $attemptdata_['bookpoints'],
-                                                                $attemptdata_['booklength'], 
-                                                                $attemptdata_['totalpoints']);
+                                } else {
+                                    if (reader_check_search_text($searchtext, $coursestudent, $attemptdata_)) {
+                                        switch (strtolower($attemptdata_['passed'])) { 
+                                            case "true": 
+                                                $passedstatus = "P";
+                                                break; 
+                                            case "false": 
+                                                $passedstatus = "F"; 
+                                                break; 
+                                            case "cheated": 
+                                                $passedstatus = "C";
+                                                break; 
+                                        } 
+                                        if (!$excel && $sort == 'date'){
+                                            $attemptbooktime = array(date("d-M-Y", $attemptdata_['timefinish']), $attemptdata_['timefinish']);
+                                        } else if (!$excel) {
+                                            $attemptbooktime = date("d-M-Y", $attemptdata_['timefinish']);
                                         } else {
-                                            $table->data[] = array ($picture,
-                                                                $linkusername,
-                                                                $linkfullname,
-                                                                $attemptbooktime,
-                                                                $attemptdata_['userlevel'],
-                                                                $attemptdata_['bookdiff'],
-                                                                $attemptdata_['booktitle'],
-                                                                $attemptdata_['persent']."%",
-                                                                $passedstatus,
-                                                                $attemptdata_['bookpoints'],
-                                                                $attemptdata_['booklength'], 
-                                                                $attemptdata_['totalpoints']);
+                                            $attemptbooktime = date("Y/m/d", $attemptdata_['timefinish']);
                                         }
-                                        $totable['first'] = false;
-                                    } else {
-                                        if ($reader->checkbox == 1) {
-                                            $table->data[] = array ('','','',
-                                                               reader_ra_checkbox($attemptdata_),
-                                                               $attemptbooktime,
-                                                               $attemptdata_['userlevel'],
-                                                               $attemptdata_['bookdiff'],
-                                                               $attemptdata_['booktitle'],
-                                                               $attemptdata_['persent']."%",
-                                                               $passedstatus,
-                                                               $attemptdata_['bookpoints'],
-                                                               $attemptdata_['booklength'], 
-                                                               $attemptdata_['totalpoints']);
+                                        
+                                        if (($totable['first'] || $sort == 'slevel' || $sort == 'blevel' || $sort == 'title' || $sort == 'date') || $excel) {
+                                            list($linkusername, $username) = reader_user_link_t($coursestudent);
+                                            if ($excel) $linkusername = $username;
+                                            list($linkfullname, $username) = reader_fullname_link_t($coursestudent);
+                                            if (has_capability('mod/reader:viewstudentreaderscreens', $contextmodule)) {
+                                                list($linkfullname) = reader_fullname_link_viewasstudent($coursestudent, "grid={$grid}&searchtext={$searchtext}&page={$page}&sort={$sort}&orderby={$orderby}");
+                                            }
+                                            if ($reader->checkbox == 1) {
+                                                $table->data[] = array ($picture,
+                                                                    $linkusername,
+                                                                    $linkfullname,
+                                                                    reader_ra_checkbox($attemptdata_),
+                                                                    $attemptbooktime,
+                                                                    $attemptdata_['userlevel'],
+                                                                    $attemptdata_['bookdiff'],
+                                                                    $attemptdata_['booktitle'],
+                                                                    $attemptdata_['persent']."%",
+                                                                    $passedstatus,
+                                                                    $attemptdata_['bookpoints'],
+                                                                    $attemptdata_['booklength'], 
+                                                                    $attemptdata_['totalpoints']);
+                                            } else {
+                                                $table->data[] = array ($picture,
+                                                                    $linkusername,
+                                                                    $linkfullname,
+                                                                    $attemptbooktime,
+                                                                    $attemptdata_['userlevel'],
+                                                                    $attemptdata_['bookdiff'],
+                                                                    $attemptdata_['booktitle'],
+                                                                    $attemptdata_['persent']."%",
+                                                                    $passedstatus,
+                                                                    $attemptdata_['bookpoints'],
+                                                                    $attemptdata_['booklength'], 
+                                                                    $attemptdata_['totalpoints']);
+                                            }
+                                            $totable['first'] = false;
                                         } else {
-                                            $table->data[] = array ('','','',
-                                                               $attemptbooktime,
-                                                               $attemptdata_['userlevel'],
-                                                               $attemptdata_['bookdiff'],
-                                                               $attemptdata_['booktitle'],
-                                                               $attemptdata_['persent']."%",
-                                                               $passedstatus,
-                                                               $attemptdata_['bookpoints'],
-                                                               $attemptdata_['booklength'], 
-                                                               $attemptdata_['totalpoints']);
+                                            if ($reader->checkbox == 1) {
+                                                $table->data[] = array ('','','',
+                                                                   reader_ra_checkbox($attemptdata_),
+                                                                   $attemptbooktime,
+                                                                   $attemptdata_['userlevel'],
+                                                                   $attemptdata_['bookdiff'],
+                                                                   $attemptdata_['booktitle'],
+                                                                   $attemptdata_['persent']."%",
+                                                                   $passedstatus,
+                                                                   $attemptdata_['bookpoints'],
+                                                                   $attemptdata_['booklength'], 
+                                                                   $attemptdata_['totalpoints']);
+                                            } else {
+                                                $table->data[] = array ('','','',
+                                                                   $attemptbooktime,
+                                                                   $attemptdata_['userlevel'],
+                                                                   $attemptdata_['bookdiff'],
+                                                                   $attemptdata_['booktitle'],
+                                                                   $attemptdata_['persent']."%",
+                                                                   $passedstatus,
+                                                                   $attemptdata_['bookpoints'],
+                                                                   $attemptdata_['booklength'], 
+                                                                   $attemptdata_['totalpoints']);
+                                            }
                                         }
                                     }
                                 }
@@ -1821,14 +1847,15 @@
                         }
                     }
                 }
+                
+                reader_save_cache_obj($cachename, $table->data);
+            }
+
+            if ($sort == 'slevel' || $sort == 'blevel' || $sort == 'title' || $sort == 'date') {
+                $table->data = reader_sort_table_data ($table->data, $titlesarray, $orderby, $sort);
             }
             
-            reader_save_cache_obj('admin-fullreports-'.$reader->id."-".$grid."-".$ct, $table->data);
-        }
-
-        if ($sort == 'slevel' || $sort == 'blevel' || $sort == 'title' || $sort == 'date') {
-            $table->data = reader_sort_table_data ($table->data, $titlesarray, $orderby, $sort);
-        }
+        } //END sort
         
         if ($excel) {
             $formatDate =& $workbook->add_format();
@@ -1872,26 +1899,47 @@
         }
         
         reader_excel_download_btn();
-
-        reader_print_search_form ($id, $act);
         
-        reader_print_group_select_box($course->id, new moodle_url('/mod/reader/admin.php', array('a'=>'admin', 'id'=>$id, 'act'=>$act, 'sort'=>$sort, 'orderby'=>$orderby, 'ct'=>$ct)));
+        if (!empty($book))
+            $link = new moodle_url('/mod/reader/admin.php', array('a'=>'admin', 'id'=>$id, 'act'=>$act, 'sort'=>$sort, 'orderby'=>$orderby, 'book'=>$book, 'grid'=>$grid));
+        else
+            $link = new moodle_url('/mod/reader/admin.php', array('a'=>'admin', 'id'=>$id, 'act'=>$act, 'sort'=>$sort, 'orderby'=>$orderby, 'grid'=>$grid));
         
-        reader_select_term();
+        echo html_writer::start_tag('form', array('action'=>$link, 'method'=>'post', 'id'=>'id_reader_reports_form', 'class'=>'popupform'));
         
-        reader_select_perpage($id, $act, $sort, $orderby, $grid);
-
-        list($totalcount, $table->data, $startrec, $finishrec, $options["page"]) = reader_get_pages($table->data, $page, $perpage);
-
-        $alinkpadding     = new moodle_url("/mod/reader/admin.php", array("a"=>"admin", "id"=>$id, "act"=>$act, "grid"=>$grid, "sort"=>$sort, "orderby"=>$orderby, "ct"=>$ct));
-
-        echo $OUTPUT->render(new paging_bar($totalcount, $page, $perpage, $alinkpadding)); 
+        reader_print_search_form_sub ($id, $act);
         
-        if ($table) {
-            echo html_writer::table($table);
+        reader_print_group_select_box_sub($course->id);
+        
+        reader_select_term_sub();
+        
+        reader_select_perpage_sub($id, $act, $sort, $orderby, $grid);
+        
+        echo html_writer::start_tag('div', array('class'=>'fr'));
+        echo html_writer::empty_tag('input', array('type'=>'submit', 'name'=>'submit', 'value'=>get_string('go', 'reader'), 'style'=>'margin-right: 10px;'));
+        echo html_writer::end_tag('div');
+        echo html_writer::tag('div', '', array('class'=>'clear'));
+        
+        echo html_writer::end_tag('form');
+        
+        echo html_writer::tag('div', '', array('class'=>'clear'));
+        
+        
+        if (!empty($_GET['sort']) || $excel) {
+
+            list($totalcount, $table->data, $startrec, $finishrec, $options["page"]) = reader_get_pages($table->data, $page, $perpage);
+
+            $alinkpadding     = new moodle_url("/mod/reader/admin.php", array("a"=>"admin", "id"=>$id, "act"=>$act, "grid"=>$grid, "sort"=>$sort, "orderby"=>$orderby, "ct"=>$ct));
+
+            echo $OUTPUT->render(new paging_bar($totalcount, $page, $perpage, $alinkpadding)); 
+            
+            if ($table) {
+                echo html_writer::table($table);
+            }
+            
+            echo $OUTPUT->render(new paging_bar($totalcount, $page, $perpage, $alinkpadding)); 
+        
         }
-        
-        echo $OUTPUT->render(new paging_bar($totalcount, $page, $perpage, $alinkpadding)); 
 
 
 /*

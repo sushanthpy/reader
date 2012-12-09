@@ -261,4 +261,5 @@ $string['user'] = 'User';
 $string['sumgrades'] = 'SumGrades';
 $string['status'] = 'status';
 $string['quizzespassedtable'] = 'Quizzes passed at RL-{$a}';
+$string['go'] = 'Go';
 
